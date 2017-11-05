@@ -45,10 +45,10 @@ install mysql
 make database voiceminder
 export environment variables:
 ```
-(sleeporant) > source voiceminder.env
-(sleeporant) > python3 manage.py db upgrade
-(sleeporant) > python3 manage.py seed
-(sleeporant) > python3 run.py
+(voiceminder) > source voiceminder.env
+(voiceminder) > python3 manage.py db upgrade
+(voiceminder) > python3 manage.py seed
+(voiceminder) > python3 run.py
 ```
 
 install localtunnel via localtunnel.me
