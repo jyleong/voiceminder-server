@@ -2,10 +2,16 @@ import os
 import datetime
 import time
 
+from flask import jsonify, request
+from tornado.wsgi import WSGIContainer
+from tornado.web import Application, FallbackHandler
+from tornado.ioloop import IOLoop
+
 import app_file
+from websocket import WebSocket
 from src.app_file import db
 from src import models
-from flask import jsonify, request
+
 app = app_file.create_app(app_file.config_name)
 
 
@@ -70,7 +76,18 @@ def get_user(userId):
 
 
 if __name__ == '__main__':
+    container = WSGIContainer(app)
+    server = Application([
+        (r'/websocket/', WebSocket),
+        (r'.*', FallbackHandler, dict(fallback=container))
+    ])
+
+    print("Running server...")
     if 'PRODUCTION' in os.environ:
-        app.run(host="0.0.0.0", port=int(os.environ['PORT']))
+        # app.run(host="0.0.0.0", port=int(os.environ['PORT']))
+        server.listen(port=int(os.environ['PORT']), address="0.0.0.0")
+        IOLoop.instance().start()
     else:
-        app.run()
+        # app.run()
+        server.listen(5000)
+        IOLoop.instance().start()
