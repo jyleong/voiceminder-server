@@ -44,14 +44,16 @@ Run instructions
 install mysql
 make database voiceminder
 export environment variables:
+Make sure to run in /src directory
 ```
 (voiceminder) > source voiceminder.env
-(voiceminder) > python3 manage.py db upgrade
-(voiceminder) > python3 manage.py seed
-(voiceminder) > python3 run.py
+(voiceminder) > python3 src/manage.py db upgrade
+(voiceminder) > python3 src/manage.py seed
+(voiceminder) > python3 src/run.py
 ```
 
 install localtunnel via localtunnel.me
 launch in terminal
 > lt -s voiceminder -p 5000
-lauches api as https://voiceminder.localtunnel.me
+
+This launches api as https://voiceminder.localtunnel.me
