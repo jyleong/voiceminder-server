@@ -76,6 +76,7 @@ def get_user(userId):
 
 
 if __name__ == '__main__':
+    print("PYTHONPATH: {}".format(os.environ['PYTHONPATH']))
     container = WSGIContainer(app)
     server = Application([
         (r'/websocket/', WebSocket),
