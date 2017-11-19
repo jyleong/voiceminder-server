@@ -57,6 +57,8 @@ mysql -u root -p
 mysql -u username -p
 CREATE DATABASE voiceminder;
 ```
+Once voiceminder database has been created, now you can go to the your virtual environment
+```
 (voiceminder) > python3 src/manage.py db upgrade
 (voiceminder) > python3 src/manage.py seed
 (voiceminder) > python3 src/run.py
