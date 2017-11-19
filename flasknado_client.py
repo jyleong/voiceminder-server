@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from sockets.websocket import create_connection
+from websocket import create_connection
 ws = create_connection("ws://localhost:5000/websocket/")
 print("Sending 'Hello, World'...")
 ws.send("Hello, World")
