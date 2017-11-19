@@ -43,9 +43,20 @@ To add a required package to the project, use the `pip freeze` command:
 Run instructions
 install mysql
 make database voiceminder
+to export env variables, copy and paste voiceminder.env from wiki into repo and change python path
 export environment variables:
 ```
 (voiceminder) > source voiceminder.env
+
+```
+then install mysql, create a database called voiceminder 
+
+```
+brew install mysql
+mysql -u root -p
+mysql -u username -p
+CREATE DATABASE voiceminder;
+```
 (voiceminder) > python3 src/manage.py db upgrade
 (voiceminder) > python3 src/manage.py seed
 (voiceminder) > python3 src/run.py
