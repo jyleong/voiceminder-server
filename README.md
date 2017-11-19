@@ -44,9 +44,10 @@ Run instructions
 install mysql
 make database voiceminder
 export environment variables:
-Make sure to run in /src directory
 ```
 (voiceminder) > source voiceminder.env
+(voiceminder) > python3 src/manage.py db init
+(voiceminder) > python3 src/manage.py db migrate
 (voiceminder) > python3 src/manage.py db upgrade
 (voiceminder) > python3 src/manage.py seed
 (voiceminder) > python3 src/run.py
