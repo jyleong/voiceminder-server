@@ -10,3 +10,5 @@ class SocketInstances(object):
             SocketInstances.__instance = object.__new__(cls)
 
         return SocketInstances.__instance
+    def count():
+      return len(socket_storage)
