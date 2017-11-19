@@ -1,16 +1,16 @@
-import os
 import datetime
+import os
 import time
 
 from flask import jsonify, request
-from tornado.wsgi import WSGIContainer
-from tornado.web import Application, FallbackHandler
 from tornado.ioloop import IOLoop
+from tornado.web import Application, FallbackHandler
+from tornado.wsgi import WSGIContainer
 
 import app_file
-from websocket import WebSocket
-from src.app_file import db
+from sockets.websocket import WebSocket
 from src import models
+from src.app_file import db
 
 app = app_file.create_app(app_file.config_name)
 
