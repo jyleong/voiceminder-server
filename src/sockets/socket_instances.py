@@ -1,6 +1,5 @@
 ## Socket Instance to hold global dictionary of all in current use sockets,
-## should only have aone member variable dictionary of socket instances
-
+## should only have one member variable dictionary of socket instances
 
 class SocketInstances(object):
     __instance = None
@@ -14,16 +13,13 @@ class SocketInstances(object):
 
     @staticmethod
     def getSocketIdByName(name):
-      return SocketInstances.namedSocketIDs.get(name, None)
+      socketId = SocketInstances.namedSocketIDs.get(name, None)
+      return socketId
 
     @staticmethod
     def getSocketInstanceByName(name):
       socketId = SocketInstances.getSocketIdByName(name)
-      print(socketId)
-      # print(type(SocketInstances.socketStorage))
-      print(SocketInstances.socketStorage)
-      socket = SocketInstances.socketStorage[socketId]
-      print(socket)
+      socket = SocketInstances.socketStorage.get(socketId, None)
       return socket
 
     @staticmethod
