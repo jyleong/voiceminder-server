@@ -11,11 +11,18 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(60))
+    socketInstanceId = db.Column(db.String(60)) # to store the uuid that maps to a websocket instance
     sleeprecord = db.relationship('SleepRecord', backref='sleeprecords', lazy='dynamic')
 
 
     def __init__(self, name):
         self.name = name
+
+    def getSocketInstanceId(self):
+        return self.socketInstanceId
+
+    def setSocketInstanceId(self, socketInstanceId):
+        self.socketInstanceId = socketInstanceId
 
 class SleepRecord(db.Model):
     """The test case table in sleeportant"""
