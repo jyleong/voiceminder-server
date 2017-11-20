@@ -1,7 +1,5 @@
 import uuid
-
 from tornado.websocket import WebSocketHandler
-
 from sockets.socket_instances import SocketInstances
 
 

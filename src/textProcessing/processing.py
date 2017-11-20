@@ -26,11 +26,8 @@ class ProcessText(object):
     """
     def getNameandMessage(self, userInput):
         inputlist = userInput.split()
-
         recipientName = inputlist[1]
         message = ' '.join(inputlist[2:])
+        return recipientName , message
 
-        print('recipientName:', recipientName)
-        print('message:', message)
-
-        return json.dumps({'recipient_Name': recipientName, 'message': message})
+        # return json.dumps({'recipient_Name': recipientName, 'message': message})
