@@ -23,7 +23,7 @@ class UserList(object):
     return False
 
   @classmethod
-  def userGivenSocket(cls, socket):
+  def userFromSocket(cls, socket):
     for u in cls.users:
       if u.socket == socket:
         return u

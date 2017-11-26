@@ -4,6 +4,7 @@ from sockets.socket_instances import SocketInstances
 from textProcessing.processing import ProcessingState, ProcessText
 from enum import Enum
 from user.User import User
+from user.User import UserState
 from user.user_list import UserList
 
 class SocketState(Enum):
@@ -29,8 +30,17 @@ class WebSocket(WebSocketHandler):
     def on_message(self, str):
         #TODO: get user instance, given socket
         print("on_message: ", str)
+        # guard
+        currentUser = UserList.userFromSocket(self)
+        if currentUser is None:
+            self.write_message('Fatal Error, currentUser is None')
+            return
+        if currentUser.state is UserState.Nameless:
+            print("userstate is nameless!!!!")
+            return
+
         # Current user from self/socket
-        if SocketInstances.getNameFromSocket(self) is None:
+        if UserList.userFromSocket(self) is None:
             userName = ProcessText.getUserName(str)
             SocketInstances.setSocketIdByName(self.id, userName)
             self.write_message("Is your name " + userName)
