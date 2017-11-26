@@ -24,4 +24,4 @@ class SocketInstances(object):
 
     @classmethod
     def setSocketIdByName(cls, socketId, name):
-        SocketInstances.namedSocketIDs[name] = socketId
+        cls.namedSocketIDs[name] = socketId
