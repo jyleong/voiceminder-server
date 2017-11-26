@@ -9,6 +9,14 @@ class ProcessText(object):
     """
     Class of text processing methods in python
     """
+    @staticmethod
+    def isSelfIdentification(userInput):
+        
+        return True
+
+    @staticmethod
+    def isUserMessaging(userInput):
+        return True
 
     """
         take in a string like "Hi I'm June"
@@ -18,22 +26,23 @@ class ProcessText(object):
     """
     @staticmethod
     def getEnum(userInput):
-        inputlist = userInput.split()
-        greeting = inputlist[0].lower()
-        enum = 0
-        if greeting == 'hello':
+        print("getEnum: ", userInput)
+        if ProcessText.isSelfIdentification(userInput):
+            print("isSelfIdentification")
             enum = ProcessingState.Recognition
-        elif greeting == 'yo' or greeting == 'hey':
+        elif ProcessText.isUserMessaging(userInput):
+            print("isUserMessaging")
             enum = ProcessingState.Communication
         return enum
 
     @staticmethod
     def getUserName(userInput):
+        if userInput is None or "": return None
+        print("getUserName: ", userInput)
+        # assume that the last word of userInput 
         inputlist = userInput.split()
-        recipientName = inputlist[3].lower()
+        recipientName = inputlist[-1].lower()
         return recipientName
-        # return "Hello {}".format(recipientName)
-
 
     """
         take in a string: "hey june can you pick up some cheese"
