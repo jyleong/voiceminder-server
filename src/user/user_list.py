@@ -1,5 +1,3 @@
-from user.User import User
-
 class UserList(object):
   __instance = None
   users = []
