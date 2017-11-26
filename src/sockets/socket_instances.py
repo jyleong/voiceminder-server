@@ -8,7 +8,6 @@ class SocketInstances(object):
     def __new__(cls):
         if SocketInstances.__instance is None:
             SocketInstances.__instance = object.__new__(cls)
-
         return SocketInstances.__instance
 
     @staticmethod
