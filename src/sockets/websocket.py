@@ -7,18 +7,22 @@ class WebSocket(WebSocketHandler):
         self.id = str(uuid.uuid4())
         SocketInstances.socketStorage[self.id] = self
 
-    def on_message(self, message):
-        print("message: ", message)
+    def on_message(self, str):
+        # TODO check str enum type, 
+        # if type is recognition, set socket.
+        # if type is send message, get socket 
+
+        print("message: ", str)
         # name = getUserName(message)
         # usermessage = getUsermessage(message)
 
-        # search message for persons name/ or id to know who to send to
+        # echo message to everyone except self
         for k, v in SocketInstances.socketStorage.items():
             print("id: {}, socket instance: {}".format(k,v))
             if k != self.id:
                 print("writing message")
                 #TODO refactor into usermessage
-                v.write_message(message)
+                v.write_message(str)
         
         SocketInstances.setSocketIdByName(self.id, "june")
 

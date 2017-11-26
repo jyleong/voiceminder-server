@@ -12,12 +12,12 @@ class SocketInstances(object):
         return SocketInstances.__instance
 
     @staticmethod
-    def getSocketIdByName(cls, name):
+    def getSocketIdByName(name):
       socketId = SocketInstances.namedSocketIDs.get(name, None)
       return socketId
 
     @staticmethod
-    def getSocketInstanceByName(cls, name):
+    def getSocketInstanceByName(name):
       socketId = SocketInstances.getSocketIdByName(name)
       socket = SocketInstances.socketStorage.get(socketId, None)
       return socket
