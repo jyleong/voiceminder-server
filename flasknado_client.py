@@ -2,8 +2,8 @@
 
 from websocket import create_connection
 ws = create_connection("ws://localhost:5000/websocket/")
-print("Sending 'Hello, World'...")
-ws.send("Hello, World")
+print("Sending 'Hello I am June'...")
+ws.send("Hello I am June")
 print("Sent")
 print("Receiving...")
 result =  ws.recv()

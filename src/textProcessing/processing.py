@@ -1,5 +1,9 @@
-import json
-from enum import Enum, auto
+
+from enum import Enum
+
+class ProcessingState(Enum):
+    Recognition = 1
+    Communication = 2
 
 class ProcessText(object):
     """
@@ -12,21 +16,21 @@ class ProcessText(object):
         and extract the name
         will need NLP properly here
     """
-
-    Recognition = auto()
-    Communication = auto()
-
-    def getEnum(self, userInput):
+    @staticmethod
+    def getEnum(userInput):
         inputlist = userInput.split()
-        if inputlist[0] == 'hello':
-            enum = Recognition
-        elif inputlist[0] == 'yo' || inputlist[0] == 'hey'
-            enum = Communication
+        greeting = inputlist[0].lower()
+        enum = 0
+        if greeting == 'hello':
+            enum = ProcessingState.Recognition
+        elif greeting == 'yo' or greeting == 'hey':
+            enum = ProcessingState.Communication
         return enum
 
-    def getUserName(self, userInput):
+    @staticmethod
+    def getUserName(userInput):
         inputlist = userInput.split()
-        recipientName = inputlist[3]
+        recipientName = inputlist[3].lower()
         return recipientName
         # return "Hello {}".format(recipientName)
 
@@ -36,10 +40,10 @@ class ProcessText(object):
         Understand the hey and name, extract name and message
         will need NLP properly here
     """
-    def getNameandMessage(self, userInput):
+    @staticmethod
+    def getNameandMessage(userInput):
         inputlist = userInput.split()
         recipientName = inputlist[1]
         message = ' '.join(inputlist[2:])
         return recipientName , message
 
-        # return json.dumps({'recipient_Name': recipientName, 'message': message})
