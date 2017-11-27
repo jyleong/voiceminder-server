@@ -5,6 +5,7 @@ class UserState(Enum):
   NameStaging = 1
   Ready = 2
   Conversing = 3
+  Invalid = 99
 
 class User(object):
   socket = None
