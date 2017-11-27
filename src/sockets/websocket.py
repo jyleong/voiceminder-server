@@ -7,16 +7,13 @@ from user.User import User
 from user.User import UserState
 from user.user_list import UserList
 
-class SocketState(Enum):
-    Nameless = 1
-    NameStaging = 2
-    Ready = 3
 
 class WebSocket(WebSocketHandler):
-    def getSocketState(self):
-        pass
-            
 
+    def askForName(self):
+        self.write_message("State your name")
+
+            
     def open(self):
         self.id = str(uuid.uuid4())
         newUser = User()
@@ -25,7 +22,7 @@ class WebSocket(WebSocketHandler):
 
         print("UserList.containsUser(newUser): ", UserList.containsUser(newUser))
         # SocketInstances.socketStorage[self.id] = self
-        self.write_message("State your name")
+        self.askForName()
 
     def on_message(self, str):
         #TODO: get user instance, given socket
@@ -36,7 +33,7 @@ class WebSocket(WebSocketHandler):
             self.write_message('Fatal Error, currentUser is None')
             return
         if currentUser.state is UserState.Nameless:
-            print("userstate is nameless!!!!")
+            self.handleNamelessState(currentUser, str)
             return
 
         # Current user from self/socket
@@ -75,3 +72,16 @@ class WebSocket(WebSocketHandler):
     def on_close(self):
         SocketInstances.socketStorage.pop(self.id, 0)
         print("Socket closed.")
+
+    def handleNamelessState(self, currentUser, str):
+        name = ProcessText.getUserName(str)
+        if name is not None:
+            self.confirmName(name)
+            currentUser.state = UserState.NameStaging
+        else:
+            self.askForName()
+
+    def confirmName(self, name):
+        self.write_message(f"Is your name {name}?")
+
+ 
