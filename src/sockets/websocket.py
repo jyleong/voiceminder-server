@@ -7,16 +7,13 @@ from user.User import User
 from user.User import UserState
 from user.user_list import UserList
 
-class SocketState(Enum):
-    Nameless = 1
-    NameStaging = 2
-    Ready = 3
 
 class WebSocket(WebSocketHandler):
-    def getSocketState(self):
-        pass
-            
 
+    def askForName(self):
+        self.write_message("State your name")
+
+            
     def open(self):
         self.id = str(uuid.uuid4())
         newUser = User()
@@ -25,7 +22,7 @@ class WebSocket(WebSocketHandler):
 
         print("UserList.containsUser(newUser): ", UserList.containsUser(newUser))
         # SocketInstances.socketStorage[self.id] = self
-        self.write_message("State your name")
+        self.askForName()
 
     def on_message(self, str):
         #TODO: get user instance, given socket
@@ -35,9 +32,23 @@ class WebSocket(WebSocketHandler):
         if currentUser is None:
             self.write_message('Fatal Error, currentUser is None')
             return
-        if currentUser.state is UserState.Nameless:
-            print("userstate is nameless!!!!")
+        state = currentUser.state
+        if state is UserState.Invalid:
+            self.write_message('Invalid state, start over')
             return
+
+        if state is UserState.Nameless:
+            self.handleNamelessState(currentUser, str)
+        elif state is UserState.NameStaging:
+            self.handleNameStagingState(currentUser, str)
+        elif state is UserState.Ready:
+            self.handleReadyState(currentUser, str)
+        elif state is UserState.Conversing:
+            self.handleConversingState(currentUser, str)
+        else:
+            self.write_message('Invalid state, start over')
+        return
+
 
         # Current user from self/socket
         if UserList.userFromSocket(self) is None:
@@ -56,16 +67,6 @@ class WebSocket(WebSocketHandler):
         else:
             print("doing nothing in the else case")
         
-        # # echo message to everyone except self
-        # for k, v in SocketInstances.socketStorage.items():
-        #     print("id: {}, socket instance: {}".format(k,v))
-        #     if k != self.id:
-        #         print("writing message")
-        #         #TODO refactor into usermessage
-        #         v.write_message(str)
-        
-        # SocketInstances.setSocketIdByName(self.id, "june")
-
         # destination = SocketInstances.getSocketInstanceByName("june")
         # print("destination: ", destination)
         # destination.write_message("june said hey kevin")
@@ -75,3 +76,33 @@ class WebSocket(WebSocketHandler):
     def on_close(self):
         SocketInstances.socketStorage.pop(self.id, 0)
         print("Socket closed.")
+
+    def handleNamelessState(self, currentUser, str):
+        name = ProcessText.getUserName(str)
+        if name is not None:
+            self.confirmName(name)
+            currentUser.state = UserState.NameStaging
+        else:
+            self.askForName()
+            '''
+            self.handleReadyState(currentUser, str)
+        elif state is UserState.Conversing:
+            self.handleConversingState(currentUser, str)
+
+            '''
+    def handleNameStagingState(self, currentUser, str):
+        print("handleNameStagingState")
+        pass
+
+    def handleReadyState(self, currentUser, str):
+        print("handleReadyState")
+        pass
+
+    def handleConversingState(self, currentUser, str):
+        print("handleConversingState")
+        pass
+
+    def confirmName(self, name):
+        self.write_message(f"Is your name {name}?")
+
+ 
