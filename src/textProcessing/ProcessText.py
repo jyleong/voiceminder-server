@@ -46,7 +46,7 @@ class ProcessText(object):
 
     @staticmethod
     def isAffirmative(userInput):
-        return False
+        return True
     """
         take in a string: "hey june can you pick up some cheese"
         Understand the hey and name, extract name and message

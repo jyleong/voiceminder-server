@@ -1,7 +1,7 @@
 import uuid
 from tornado.websocket import WebSocketHandler
 from sockets.socket_instances import SocketInstances
-from textProcessing.processing import ProcessingState, ProcessText
+from textProcessing.ProcessText import ProcessingState, ProcessText
 from enum import Enum
 from user.User import User
 from user.User import UserState
@@ -60,23 +60,25 @@ class WebSocket(WebSocketHandler):
         name = ProcessText.getUserName(str)
         if name is not None:
             self.confirmName(name)
-            currentUser.state = UserState.NameStaging
+            user.state = UserState.NameStaging
         else:
             self.askForName()
 
     def confirmName(self, name):
         self.write_message(f"Is your name {name}?")
-        user = currentUser(self)
+        user = self.currentUser()
+        user.name = name
         user.state = UserState.NameStaging
+        #TODO: put a timer on user on a thread and callback to check back on user
+
 
     def handleNameStagingState(self, user, str):
-        affirmative = ProcessText.isAffirmative(str)
-        if !affirmative:
+        if ProcessText.isAffirmative(str):
+            user.state = UserState.Ready
+            self.write_message(f"Hello {user.name}, now ready to send messages")
+        else:
             user.state = UserState.Nameless
             self.askForName()
-        else:
-            user.state = UserState.Ready
-            self.write_message(f"Hello {name}, now ready to send messages")
 
     def handleReadyState(self, user, str):
         print("handleReadyState")
