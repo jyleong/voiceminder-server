@@ -46,7 +46,8 @@ class ProcessText(object):
 
     @staticmethod
     def isAffirmative(userInput):
-        if userInput == 'yes' or 'ya' or 'that is right' or 'correct' or 'right':
+        affirmativeList = ['yes', 'yep', 'ya', 'that is right', 'correct', 'right']
+        if userInput in affirmativeList:
             return True
         else:
             return False
