@@ -1,5 +1,6 @@
 ## Socket Instance to hold global dictionary of all in current use sockets,
-## should only have one member variable dictionary of socket instances
+## should only have aone member variable dictionary of socket instances
+
 
 class SocketInstances(object):
     __instance = None

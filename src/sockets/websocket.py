@@ -87,6 +87,4 @@ class WebSocket(WebSocketHandler):
     def handleConversingState(self, user, str):
         print("handleConversingState")
         pass
-
-    
- 
+        
