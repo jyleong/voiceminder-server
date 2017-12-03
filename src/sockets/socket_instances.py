@@ -9,23 +9,19 @@ class SocketInstances(object):
     def __new__(cls):
         if SocketInstances.__instance is None:
             SocketInstances.__instance = object.__new__(cls)
-
         return SocketInstances.__instance
 
-    @classmethod
-    def getSocketIdByName(cls, name):
-        return SocketInstances.namedSocketIDs.get(name, None)
+    @staticmethod
+    def getSocketIdByName(name):
+      socketId = SocketInstances.namedSocketIDs.get(name, None)
+      return socketId
 
-    @classmethod
-    def getSocketInstanceByName(cls, name):
-        socketId = SocketInstances.getSocketIdByName(name)
-        print(socketId)
-        # print(type(SocketInstances.socketStorage))
-        print(SocketInstances.socketStorage)
-        socket = SocketInstances.socketStorage[socketId]
-        print(socket)
-        return socket
+    @staticmethod
+    def getSocketInstanceByName(name):
+      socketId = SocketInstances.getSocketIdByName(name)
+      socket = SocketInstances.socketStorage.get(socketId, None)
+      return socket
 
     @classmethod
     def setSocketIdByName(cls, socketId, name):
-        SocketInstances.namedSocketIDs[name] = socketId
+        cls.namedSocketIDs[name] = socketId
