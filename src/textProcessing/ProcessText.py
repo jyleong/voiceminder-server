@@ -54,6 +54,7 @@ class ProcessText(object):
     """
     @staticmethod
     def getNameandMessage(userInput):
+        # TODO More sophis later on
         inputlist = userInput.split()
         recipientName = inputlist[1]
         message = ' '.join(inputlist[2:])

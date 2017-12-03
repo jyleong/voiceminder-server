@@ -82,7 +82,19 @@ class WebSocket(WebSocketHandler):
 
     def handleReadyState(self, user, str):
         print("handleReadyState")
-        pass
+        # process str, cases: outgoing, i dont understand
+        recipientName, message = ProcessText.getNameandMessage(str)
+        if recipientName is None:
+            self.write_message("could not recognize the recipient in your message")
+            return
+        recipient = UserList.userFromName(recipientName)
+        if recipient is None:
+            self.write_message("could not find the recipient from your message")
+            return
+        if message is None:
+            self.write_message(f"could not understand that message to {recipientName}")
+        recipient.socket.write_message(f"{user.name} says, {message}")
+        user.state = UserState.Conversing
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
