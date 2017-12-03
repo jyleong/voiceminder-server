@@ -46,11 +46,13 @@ class ProcessText(object):
 
     @staticmethod
     def isAffirmative(userInput):
+        inputList = userInput.split()
         affirmativeList = ['yes', 'yep', 'ya', 'that is right', 'correct', 'right']
-        if userInput in affirmativeList:
-            return True
-        else:
-            return False
+        for each in inputList:
+            if each in affirmativeList:
+                return True
+                break
+        return False
             
     """
         take in a string: "hey june can you pick up some cheese"
