@@ -24,85 +24,67 @@ class WebSocket(WebSocketHandler):
         # SocketInstances.socketStorage[self.id] = self
         self.askForName()
 
+    def currentUser(self):
+        return UserList.userFromSocket(self)
+
     def on_message(self, str):
         #TODO: get user instance, given socket
         print("on_message: ", str)
         # guard
-        currentUser = UserList.userFromSocket(self)
-        if currentUser is None:
-            self.write_message('Fatal Error, currentUser is None')
+        user = self.currentUser()
+        if user is None:
+            self.write_message('Fatal Error, user is None')
             return
-        state = currentUser.state
+        state = user.state
         if state is UserState.Invalid:
             self.write_message('Invalid state, start over')
             return
 
         if state is UserState.Nameless:
-            self.handleNamelessState(currentUser, str)
+            self.handleNamelessState(user, str)
         elif state is UserState.NameStaging:
-            self.handleNameStagingState(currentUser, str)
+            self.handleNameStagingState(user, str)
         elif state is UserState.Ready:
-            self.handleReadyState(currentUser, str)
+            self.handleReadyState(user, str)
         elif state is UserState.Conversing:
-            self.handleConversingState(currentUser, str)
+            self.handleConversingState(user, str)
         else:
             self.write_message('Invalid state, start over')
         return
-
-
-        # Current user from self/socket
-        if UserList.userFromSocket(self) is None:
-            userName = ProcessText.getUserName(str)
-            SocketInstances.setSocketIdByName(self.id, userName)
-            self.write_message("Is your name " + userName)
-            return
-        enum = ProcessText.getEnum(str)
-        if enum == ProcessingState.Recognition:
-            username = ProcessText.getUserName(str)
-            SocketInstances.setSocketIdByName(self.id, username)
-        elif enum == ProcessingState.Communication:
-            recipientName , message = ProcessText.getNameandMessage(str)
-            destination = SocketInstances.getSocketInstanceByName(recipientName)
-            destination.write_message(message)
-        else:
-            print("doing nothing in the else case")
-        
-        # destination = SocketInstances.getSocketInstanceByName("june")
-        # print("destination: ", destination)
-        # destination.write_message("june said hey kevin")
-        # print("number of sockets in SocketInstances: ", len(SocketInstances.socketStorage))
-
 
     def on_close(self):
         SocketInstances.socketStorage.pop(self.id, 0)
         print("Socket closed.")
 
-    def handleNamelessState(self, currentUser, str):
+    def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
             self.confirmName(name)
             currentUser.state = UserState.NameStaging
         else:
             self.askForName()
-            '''
-            self.handleReadyState(currentUser, str)
-        elif state is UserState.Conversing:
-            self.handleConversingState(currentUser, str)
-
-            '''
-    def handleNameStagingState(self, currentUser, str):
-        print("handleNameStagingState")
-        pass
-
-    def handleReadyState(self, currentUser, str):
-        print("handleReadyState")
-        pass
-
-    def handleConversingState(self, currentUser, str):
-        print("handleConversingState")
-        pass
 
     def confirmName(self, name):
         self.write_message(f"Is your name {name}?")
+        user = currentUser(self)
+        user.state = UserState.NameStaging
 
+    def handleNameStagingState(self, user, str):
+        affirmative = ProcessText.isAffirmative(str)
+        if !affirmative:
+            user.state = UserState.Nameless
+            self.askForName()
+        else:
+            user.state = UserState.Ready
+            self.write_message(f"Hello {name}, now ready to send messages")
+
+    def handleReadyState(self, user, str):
+        print("handleReadyState")
+        pass
+
+    def handleConversingState(self, user, str):
+        print("handleConversingState")
+        pass
+
+    
  
