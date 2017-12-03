@@ -46,7 +46,13 @@ class ProcessText(object):
 
     @staticmethod
     def isAffirmative(userInput):
-        return True
+        inputList = userInput.split()
+        affirmativeList = ['yes', 'yep', 'ya', 'correct', 'right']
+        for word in inputList:
+            if word in affirmativeList:
+                return True
+        return False
+            
     """
         take in a string: "hey june can you pick up some cheese"
         Understand the hey and name, extract name and message
