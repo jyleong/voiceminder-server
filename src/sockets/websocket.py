@@ -84,7 +84,7 @@ class WebSocket(WebSocketHandler):
         # process str, cases: outgoing, i dont understand
         recipientName, message = ProcessText.getNameandMessage(str)
 
-        if recipientName is None:
+        if not recipientName:
             self.write_message("could not recognize the recipient in your message")
             return
         recipient = UserList.userFromName(recipientName)
