@@ -24,7 +24,7 @@ class UserList(object):
   def userFromName(cls, name):
     # assume no name conflicts...
     users = [each for each in UserList.users if each.name == name]
-    return users.first
+    return users[0] if users else None
 
 
   @classmethod

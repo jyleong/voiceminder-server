@@ -20,8 +20,16 @@ def on_open(ws):
         while True:
             raw = input("Say something to the server: \n")
             ws.send(raw)
+    runThread = Thread(target=run)
+    runThread.daemon = False
+    runThread.start()
 
-    Thread(target=run).start()
+    def ping(*args):
+        while True:
+            time.sleep(1)
+            ws.send("ping")
+
+    Thread(target=ping).start()
 
 
 if __name__ == "__main__":
