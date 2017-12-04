@@ -20,14 +20,13 @@ class WebSocket(WebSocketHandler):
         newUser.socket = self
         UserList.append(newUser)
 
-        print("UserList.containsUser(newUser): ", UserList.containsUser(newUser))
-        # SocketInstances.socketStorage[self.id] = self
         self.askForName()
 
     def currentUser(self):
         return UserList.userFromSocket(self)
 
     def on_message(self, str):
+        if str == "ping": return
         #TODO: get user instance, given socket
         print("on_message: ", str)
         # guard
@@ -82,7 +81,23 @@ class WebSocket(WebSocketHandler):
 
     def handleReadyState(self, user, str):
         print("handleReadyState")
-        pass
+        # process str, cases: outgoing, i dont understand
+        recipientName, message = ProcessText.getNameandMessage(str)
+
+        if not recipientName:
+            self.write_message("could not recognize the recipient in your message")
+            return
+        recipient = UserList.userFromName(recipientName)
+        if recipient is None:
+            self.write_message("could not find the recipient from your message")
+            return
+        if message is None:
+            self.write_message(f"could not understand that message to {recipientName}")
+        print("user.name:", user.name)
+        print("message:", message)
+
+        recipient.socket.write_message(f"{user.name} says, {message}")
+        user.state = UserState.Conversing
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
