@@ -7,13 +7,11 @@ from user.User import User
 from user.User import UserState
 from user.user_list import UserList
 
-
 class WebSocket(WebSocketHandler):
 
     def askForName(self):
         self.write_message("State your name")
 
-            
     def open(self):
         self.id = str(uuid.uuid4())
         newUser = User()
@@ -55,6 +53,8 @@ class WebSocket(WebSocketHandler):
         SocketInstances.socketStorage.pop(self.id, 0)
         print("Socket closed.")
 
+
+
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
@@ -72,6 +72,10 @@ class WebSocket(WebSocketHandler):
 
 
     def handleNameStagingState(self, user, str):
+        if (not str):
+            self.confirmName(user.name)
+            return
+
         if ProcessText.isAffirmative(str):
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
