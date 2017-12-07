@@ -68,28 +68,39 @@ class WebSocket(WebSocketHandler):
         user = self.currentUser()
         user.name = name
         user.state = UserState.NameStaging
-        beginCountdown(name)
+        self.beginCountdown(name)
 
     def beginCountdown(self, name):
-        t = threading.Thread(target = countingDown)
-        if user.state == UserState.NameStaging:
-            t.start()
-        else:
-            pass
-        
+        t = threading.Thread(target=self.countingDown, args=(name,))
+        t.start()
+      
+    def removeExcessThreads(self):
+        print("deleteing all timer threads")
+        allThreads = threading.enumerate()
+        main = threading.main_thread()
+        for t in allThreads:
+            if t is main:
+                continue
+            else:
+                t.stopped = True 
 
     def countingDown(self, name):
-        sleep(10)
-        confirmName(name)
+        time.sleep(10)
+        self.confirmNameAgain(name)
 
-            
+    def confirmNameAgain(self, name):
+        self.write_message(f"Is your name {name}?")
+        user = self.currentUser()
+        user.name = name
+        self.beginCountdown(name)
+         
     def handleNameStagingState(self, user, str):
         if (not str):
             self.confirmName(user.name)
             return
 
         if ProcessText.isAffirmative(str):
-            # remove excess threads
+            self.removeExcessThreads()
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
