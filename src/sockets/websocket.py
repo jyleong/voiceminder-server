@@ -7,7 +7,6 @@ from user.User import User
 from user.User import UserState
 from user.user_list import UserList
 import threading
-import time
 
 class WebSocket(WebSocketHandler):
 
@@ -71,7 +70,7 @@ class WebSocket(WebSocketHandler):
         self.beginCountdown(name)
 
     def beginCountdown(self, name):
-        t = threading.Thread(target=self.countingDown, args=(name,))
+        t = threading.Timer(4, function=self.confirmNameAgain, args=(name,))
         t.start()
       
     def removeExcessThreads(self):
@@ -82,11 +81,7 @@ class WebSocket(WebSocketHandler):
             if t is main:
                 continue
             else:
-                t.stopped = True 
-
-    def countingDown(self, name):
-        time.sleep(10)
-        self.confirmNameAgain(name)
+                t.cancel()
 
     def confirmNameAgain(self, name):
         self.write_message(f"Is your name {name}?")
