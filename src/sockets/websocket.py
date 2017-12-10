@@ -109,16 +109,14 @@ class WebSocket(WebSocketHandler):
             self.write_message("could not find the recipient from your message")
             return
 
-        if not message:
-            self.write_message(f"could not understand that message to {recipientName}")
-
         print("user.name:", user.name)
         print("message:", message)
 
         if message:
             recipient.socket.write_message(f"{user.name} says, {message}")
         else :
-            recipient.socket.write_message(f"{user.name} wants to chat")
+            self.write_message(f"could not understand that message to {recipientName}")
+            recipient.socket.write_message(f"{user.name} says, {str}")
 
         user.state = UserState.Conversing
         return
