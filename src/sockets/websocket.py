@@ -90,6 +90,7 @@ class WebSocket(WebSocketHandler):
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
+            self.stopCountdown()
             user.state = UserState.Nameless
             self.askForName()
 
