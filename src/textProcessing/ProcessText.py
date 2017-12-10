@@ -66,3 +66,11 @@ class ProcessText(object):
         message = ' '.join(inputlist[2:])
         return recipientName , message
 
+    @staticmethod
+    def hasRecipientName(userInput):
+        inputlist = userInput.split()
+        targetPhrase = ['yo', 'yah', 'hey']
+        if targetPhrase in inputlist:
+            return True
+        return False
+            
