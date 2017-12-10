@@ -35,15 +35,11 @@ class UserList(object):
     return None
 
   @classmethod
-  def userIndexFromSocket(cls, socket):
+  def deleteUserBySocket(cls, socket):
     for i in range(len(cls.users) - 1):
       if cls.users[i].socket == socket:
-        return i
-    return -1
+        del cls.users[i]
 
-  @classmethod
-  def deleteUserByIndex(cls, index):
-    del cls.users[index]
   @classmethod
   def containsUser(cls, user):
     for u in cls.users:

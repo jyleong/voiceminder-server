@@ -52,8 +52,7 @@ class WebSocket(WebSocketHandler):
     def on_close(self):
         # find user by socket
         user = self.currentUser()
-        userIndex = UserList.userIndexFromSocket(user.socket)
-        UserList.deleteUserByIndex(userIndex)
+        UserList.deleteUserBySocket(user.socket)
 
         print("Socket closed.")
 
@@ -128,5 +127,7 @@ class WebSocket(WebSocketHandler):
         print("handleConversingState")
         # get recipient from handle ready state
         # recipient.socket.write_message(str)
+        recipientName, message = ProcessText.getNameandMessage(str)
+
         pass
         
