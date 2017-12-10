@@ -68,9 +68,6 @@ class ProcessText(object):
 
     @staticmethod
     def hasRecipientName(userInput):
-        inputlist = userInput.split()
         targetPhrase = ['yo', 'yah', 'hey']
-        if targetPhrase in inputlist:
-            return True
-        return False
+        return any (phrase in userInput.split() for phrase in targetPhrase)
             

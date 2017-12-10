@@ -72,7 +72,7 @@ class WebSocket(WebSocketHandler):
         self.beginCountdown(name)
 
     def beginCountdown(self, name):
-        countdownTimer = threading.Timer(4, function=self.confirmName, args=(name,))
+        countdownTimer = threading.Timer(10, function=self.confirmName, args=(name,))
         countdownTimer.start()
       
     def stopCountdown(self):
@@ -105,11 +105,8 @@ class WebSocket(WebSocketHandler):
         messageSuccess = self.messageNamedUser(user, recipientName, message)        
         if messageSuccess:
             user.state = UserState.Conversing
-            # pseudocode alert!
-            user.conversant = UserList.userFromName(recipientName)
-            user.conversant.conversant = user
-            user.conversant.state = UserState.Conversing
-            # TODO: user needs to remember currentRecipient  
+            recipient = UserList.userFromName(recipientName)
+            
             # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
 
     def messageNamedUser(self, user, recipientName, message):
@@ -121,6 +118,14 @@ class WebSocket(WebSocketHandler):
             self.write_message("could not find the recipient from your message")
             return False
 
+        # terminate conversation on other end if switching to new recipient
+        if user.conversant is not None and user.conversant != recipient:
+            user.conversant.conversant = None
+            user.conversant.state = UserState.Ready
+        user.conversant = recipient
+        user.conversant.conversant = user
+        user.conversant.state = UserState.Conversing
+        
         print("user.name:", user.name)
         print("message:", message)
 
@@ -130,10 +135,11 @@ class WebSocket(WebSocketHandler):
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
-        # if different from the one conversing with now, then switch.
         if ProcessText.hasRecipientName(str):
             recipientName, message = ProcessText.getNameandMessage(str)
-            messageNamedUser(recipientName, message)        
+            if not message:
+                message = str
+            self.messageNamedUser(user, recipientName, message)
         else:
             user.conversant.socket.write_message(str)
 
