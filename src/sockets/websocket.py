@@ -1,6 +1,5 @@
 import uuid
 from tornado.websocket import WebSocketHandler
-from sockets.socket_instances import SocketInstances
 from textProcessing.ProcessText import ProcessingState, ProcessText
 from enum import Enum
 from user.User import User
@@ -51,7 +50,11 @@ class WebSocket(WebSocketHandler):
         return
 
     def on_close(self):
-        SocketInstances.socketStorage.pop(self.id, 0)
+        # find user by socket
+        user = self.currentUser()
+        userIndex = UserList.userIndexFromSocket(user.socket)
+        UserList.deleteUserByIndex(userIndex)
+
         print("Socket closed.")
 
     def handleNamelessState(self, user, str):
@@ -103,16 +106,23 @@ class WebSocket(WebSocketHandler):
             self.write_message("could not recognize the recipient in your message")
             return
         recipient = UserList.userFromName(recipientName)
-        if recipient is None:
+        if not recipient:
             self.write_message("could not find the recipient from your message")
             return
-        if message is None:
+
+        if not message:
             self.write_message(f"could not understand that message to {recipientName}")
+
         print("user.name:", user.name)
         print("message:", message)
 
-        recipient.socket.write_message(f"{user.name} says, {message}")
+        if message:
+            recipient.socket.write_message(f"{user.name} says, {message}")
+        else :
+            recipient.socket.write_message(f"{user.name} wants to chat")
+
         user.state = UserState.Conversing
+        return
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
