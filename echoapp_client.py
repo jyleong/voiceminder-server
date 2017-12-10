@@ -18,7 +18,7 @@ def on_close(ws):
 def on_open(ws):
     def run(*args):
         while True:
-            raw = input("Say something to the server: \n")
+            raw = input()
             ws.send(raw)
     runThread = Thread(target=run)
     runThread.daemon = False

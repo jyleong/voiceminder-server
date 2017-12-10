@@ -11,6 +11,7 @@ class User(object):
   socket = None
   name = None
   state = UserState.Nameless
+  conversant = None
   """docstring for User"""
   def __init__(self):
     super(User, self).__init__()

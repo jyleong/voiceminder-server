@@ -100,32 +100,40 @@ class WebSocket(WebSocketHandler):
         print("handleReadyState")
         # process str, cases: outgoing, i dont understand
         recipientName, message = ProcessText.getNameandMessage(str)
+        if not message:
+            message = str
+        messageSuccess = self.messageNamedUser(user, recipientName, message)        
+        if messageSuccess:
+            user.state = UserState.Conversing
+            # pseudocode alert!
+            user.conversant = UserList.userFromName(recipientName)
+            user.conversant.conversant = user
+            user.conversant.state = UserState.Conversing
+            # TODO: user needs to remember currentRecipient  
+            # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
 
+    def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
             self.write_message("could not recognize the recipient in your message")
-            return
+            return False
         recipient = UserList.userFromName(recipientName)
         if not recipient:
             self.write_message("could not find the recipient from your message")
-            return
+            return False
 
         print("user.name:", user.name)
         print("message:", message)
 
-        if message:
-            recipient.socket.write_message(f"{user.name} says, {message}")
-        else :
-            self.write_message(f"could not understand that message to {recipientName}")
-            recipient.socket.write_message(f"{user.name} says, {str}")
-
-        user.state = UserState.Conversing
-        return
+        recipient.socket.write_message(f"{user.name} says, {message}")
+        
+        return True
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
-        # get recipient from handle ready state
-        # recipient.socket.write_message(str)
-        recipientName, message = ProcessText.getNameandMessage(str)
+        # if different from the one conversing with now, then switch.
+        if ProcessText.hasRecipientName(str):
+            recipientName, message = ProcessText.getNameandMessage(str)
+            messageNamedUser(recipientName, message)        
+        else:
+            user.conversant.socket.write_message(str)
 
-        pass
-        
