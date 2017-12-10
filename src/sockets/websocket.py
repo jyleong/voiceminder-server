@@ -115,5 +115,7 @@ class WebSocket(WebSocketHandler):
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
+        # get recipient from handle ready state
+        # recipient.socket.write_message(str)
         pass
         
