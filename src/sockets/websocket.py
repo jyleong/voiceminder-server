@@ -6,6 +6,7 @@ from enum import Enum
 from user.User import User
 from user.User import UserState
 from user.user_list import UserList
+import threading
 
 class WebSocket(WebSocketHandler):
 
@@ -53,8 +54,6 @@ class WebSocket(WebSocketHandler):
         SocketInstances.socketStorage.pop(self.id, 0)
         print("Socket closed.")
 
-
-
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
@@ -68,8 +67,18 @@ class WebSocket(WebSocketHandler):
         user = self.currentUser()
         user.name = name
         user.state = UserState.NameStaging
-        #TODO: put a timer on user on a thread and callback to check back on user
+        self.beginCountdown(name)
 
+    def beginCountdown(self, name):
+        countdownTimer = threading.Timer(4, function=self.confirmName, args=(name,))
+        countdownTimer.start()
+      
+    def stopCountdown(self):
+        allThreads = threading.enumerate()
+        main = threading.main_thread()
+        for t in allThreads:
+            if t is not main:
+                t.cancel()
 
     def handleNameStagingState(self, user, str):
         if (not str):
@@ -77,9 +86,11 @@ class WebSocket(WebSocketHandler):
             return
 
         if ProcessText.isAffirmative(str):
+            self.stopCountdown()
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
+            self.stopCountdown()
             user.state = UserState.Nameless
             self.askForName()
 
@@ -105,5 +116,7 @@ class WebSocket(WebSocketHandler):
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
+        # get recipient from handle ready state
+        # recipient.socket.write_message(str)
         pass
         
