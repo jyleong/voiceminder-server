@@ -1,4 +1,12 @@
-# https://github.com/websocket-client/websocket-client
+import speech_recognition
+from gtts import gTTS
+import os
+def speak(incomingtext):
+	print(incomingtext)
+	tts = gTTS(text=incomingtext, lang='en')
+	tts.save("incomingtext.mp3")
+	os.system("mpg321 incomingtext.mp3")
+
 import websocket
 from threading import Thread
 import time
