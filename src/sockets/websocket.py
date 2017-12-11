@@ -1,11 +1,10 @@
 import uuid
 from tornado.websocket import WebSocketHandler
 from textProcessing.ProcessText import ProcessText
-from enum import Enum
+from asynchronous.countdown import CountDown
 from user.User import User
 from user.User import UserState
 from user.user_list import UserList
-import threading
 
 class WebSocket(WebSocketHandler):
 
@@ -67,21 +66,10 @@ class WebSocket(WebSocketHandler):
         user = self.currentUser()
         user.name = name
         user.state = UserState.NameStaging
-        self.beginCountdown(name)
-
-    def beginCountdown(self, name):
-        countdownTimer = threading.Timer(10, function=self.confirmName, args=(name,))
-        countdownTimer.start()
-      
-    def stopCountdown(self):
-        allThreads = threading.enumerate()
-        main = threading.main_thread()
-        for t in allThreads:
-            if t is not main:
-                t.cancel()
+        countdown = CountDown(self.confirmName, name)
+        countdown.run()
 
     def handleNameStagingState(self, user, str):
-        self.stopCountdown()
         
         # empty string case also handled by client
         if (not str):
@@ -89,9 +77,11 @@ class WebSocket(WebSocketHandler):
             return
 
         if ProcessText.isAffirmative(str):
+            CountDown.stop()
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
+            CountDown.stop()
             user.state = UserState.Nameless
             self.askForName()
 
