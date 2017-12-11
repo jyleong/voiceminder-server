@@ -1,6 +1,6 @@
 import uuid
 from tornado.websocket import WebSocketHandler
-from textProcessing.ProcessText import ProcessingState, ProcessText
+from textProcessing.ProcessText import ProcessText
 from enum import Enum
 from user.User import User
 from user.User import UserState
@@ -96,8 +96,11 @@ class WebSocket(WebSocketHandler):
             self.askForName()
 
     def handleReadyState(self, user, str):
-        print("handleReadyState")
-        # process str, cases: outgoing, i dont understand
+        #cases: check existence of name and message
+        if not ProcessText.hasNameandMessage(str):
+            self.write_message("who is the recipient and what is the message")
+            return
+
         recipientName, message = ProcessText.getNameandMessage(str)
         if not message:
             message = str
