@@ -50,10 +50,8 @@ class WebSocket(WebSocketHandler):
         return
 
     def on_close(self):
-        # find user by socket
         user = self.currentUser()
         UserList.deleteUserBySocket(user.socket)
-
         print("Socket closed.")
 
     def handleNamelessState(self, user, str):
@@ -83,16 +81,17 @@ class WebSocket(WebSocketHandler):
                 t.cancel()
 
     def handleNameStagingState(self, user, str):
+        self.stopCountdown()
+        
+        # empty string case also handled by client
         if (not str):
             self.confirmName(user.name)
             return
 
         if ProcessText.isAffirmative(str):
-            self.stopCountdown()
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
-            self.stopCountdown()
             user.state = UserState.Nameless
             self.askForName()
 
