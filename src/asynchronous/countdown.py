@@ -8,7 +8,11 @@ class CountDown(threading.Thread):
         self.countdownTimer = None
 
     def run(self):
-        self.countdownTimer = threading.Timer(4, function=self.method, args=(self.name,))
+        self.countdownTimer = threading.Timer(10, function=self.method, args=(self.name,))
+        self.countdownTimer.start()
+
+    def runLonger(self):
+        self.countdownTimer = threading.Timer(11, function=self.method, args=(self.name,))
         self.countdownTimer.start()
 
     # static to stop all threads

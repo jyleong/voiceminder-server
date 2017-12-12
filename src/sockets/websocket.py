@@ -84,6 +84,7 @@ class WebSocket(WebSocketHandler):
             self.askForName()
 
     def handleReadyState(self, user, str):
+        print("handleReadyState")
         #check existence of name and message
         if not ProcessText.hasNameandMessage(str):
             self.write_message("who is the recipient and what is the message")
@@ -97,7 +98,8 @@ class WebSocket(WebSocketHandler):
         messageSuccess = self.messageNamedUser(user, recipientName, message)        
         if messageSuccess:
             user.state = UserState.Conversing
-
+            countdown = CountDown(user.setState, UserState.ready)
+            countdown.runLonger()
         # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
 
     def messageNamedUser(self, user, recipientName, message):
@@ -129,6 +131,7 @@ class WebSocket(WebSocketHandler):
             if not message:
                 message = str
             self.messageNamedUser(user, recipientName, message)
+            
         else:
             user.conversant.socket.write_message(str)
 
