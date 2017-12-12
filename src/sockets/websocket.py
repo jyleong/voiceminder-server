@@ -70,18 +70,16 @@ class WebSocket(WebSocketHandler):
         countdown.run()
 
     def handleNameStagingState(self, user, str):
-        
+        CountDown.stop()
         # empty string case also handled by client
         if (not str):
             self.confirmName(user.name)
             return
 
         if ProcessText.isAffirmative(str):
-            CountDown.stop()
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
-            CountDown.stop()
             user.state = UserState.Nameless
             self.askForName()
 
