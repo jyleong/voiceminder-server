@@ -3,6 +3,10 @@ import websocket
 from threading import Thread
 import time
 import sys
+import argparse
+
+USER_NAME = ""
+TEST_MODE = False
 
 
 def on_message(ws, message):
@@ -17,9 +21,13 @@ def on_close(ws):
 
 def on_open(ws):
     def run(*args):
-        while True:
-            raw = input()
-            ws.send(raw)
+
+        if USER_NAME and TEST_MODE:
+            ws.send("TEST_MODE: " + USER_NAME)
+        else:
+            while True:
+                raw = input()
+                ws.send(raw)
     runThread = Thread(target=run)
     runThread.daemon = False
     runThread.start()
@@ -34,10 +42,18 @@ def on_open(ws):
 
 if __name__ == "__main__":
     # websocket.enableTrace(True)
-    if len(sys.argv) < 2:
-        host = "ws://voiceminder.localtunnel.me/websocket/"
-    else:
-        host = sys.argv[1]
+    parser = argparse.ArgumentParser(description='Arguments to start echoapp_client')
+    parser.add_argument('--host', type=str, default="ws://voiceminder.localtunnel.me/websocket/",
+                    help='an integer for the accumulator')
+    parser.add_argument('--test', '-t', dest='test', action='store_true',
+                    help='if argument is specified, puts the client in test mode')
+    parser.add_argument('--name', '-n', required='--test' in sys.argv, type=str,
+        help="specify the name of user to create socket if in test mode")
+    args = parser.parse_args()
+    host = args.host
+    if args.test:
+        TEST_MODE = args.test
+        USER_NAME = args.name
     ws = websocket.WebSocketApp(host,
                                 on_message=on_message,
                                 on_error=on_error,

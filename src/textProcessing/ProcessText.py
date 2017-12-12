@@ -27,6 +27,15 @@ class ProcessText(object):
         recipientName = inputlist[-1].lower()
         return recipientName
 
+    '''
+    method to check if string indicates we are running
+    the client via testing mode
+    '''
+    @staticmethod
+    def checkTestingMode(str):
+        inputList = str.split()[0]
+        return inputList == "TEST_MODE:"
+
     @staticmethod
     def isAffirmative(userInput):
         inputList = userInput.split()
