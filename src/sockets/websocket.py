@@ -1,4 +1,3 @@
-import uuid
 from tornado.websocket import WebSocketHandler
 from textProcessing.ProcessText import ProcessText
 from asynchronous.countdown import CountDown
@@ -13,6 +12,7 @@ class WebSocket(WebSocketHandler):
 
     def open(self):
         print("SERVER: On new connection!")
+        self.countdown = None
         newUser = User()
         newUser.socket = self
         UserList.append(newUser)
@@ -74,8 +74,8 @@ class WebSocket(WebSocketHandler):
         user = self.currentUser()
         user.name = name
         user.state = UserState.NameStaging
-        countdown = CountDown(self.confirmName, name)
-        countdown.run()
+        self.countdown = CountDown(lambda: self.confirmName(name))
+        self.countdown.run()
 
     def handleNameStagingState(self, user, str):
         
@@ -85,11 +85,11 @@ class WebSocket(WebSocketHandler):
             return
 
         if ProcessText.isAffirmative(str):
-            CountDown.stop()
+            self.countDown.stop()
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
-            CountDown.stop()
+            self.countDown.stop()
             user.state = UserState.Nameless
             self.askForName()
 
