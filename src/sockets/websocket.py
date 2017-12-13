@@ -156,4 +156,4 @@ class WebSocket(WebSocketHandler):
         if reset == True:
             CountDown(user.setState, 2)
         else:
-            pass
+            CountDown.stop()
