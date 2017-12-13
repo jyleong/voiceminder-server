@@ -108,8 +108,8 @@ class WebSocket(WebSocketHandler):
         messageSuccess = self.messageNamedUser(user, recipientName, message)        
         if messageSuccess:
             user.state = UserState.Conversing
-            # onTimeout reset will be false, when time runs out state will be back to ready
-            countdown =  CountDown(lambda: self.onTimeout(False))
+            # when timer runs out, setState to UserState.Ready
+            countdown =  CountDown(lambda: user.setState(2))
             countdown.runLonger(6)
         
     def messageNamedUser(self, user, recipientName, message):
@@ -137,7 +137,7 @@ class WebSocket(WebSocketHandler):
     def handleConversingState(self, user, str):
         print("handleConversingState")
         # cancels the previous countDown, restart countDown
-        self.restartCountDown(True)
+        self.restartCountDown()
         if ProcessText.hasRecipientName(str):
             recipientName, message = ProcessText.getNameandMessage(str)
             if not message:
@@ -147,13 +147,6 @@ class WebSocket(WebSocketHandler):
         else:
             user.conversant.socket.write_message(str)
 
-    def restartCountDown(self, reset):
-        # TODO Currently I cant pass UserState.Ready around, so i am passing an int for now
-        countdown = CountDown(self.onTimeout, reset)
-        countdown.runLonger()
-
-    def onTimeout(self, reset):
-        if reset == True:
-            CountDown(user.setState, 2)
-        else:
-            CountDown.stop()
+    def restartCountDown(self):
+        CountDown(lambda: user.setState(2))
+        CountDown.stop()
