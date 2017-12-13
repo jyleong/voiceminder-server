@@ -77,7 +77,7 @@ class WebSocket(WebSocketHandler):
         user.state = UserState.NameStaging
 
     def handleNameStagingState(self, user, str):
-        
+        CountDown.stop()
         # empty string case also handled by client
         if (not str):
             self.countdown = CountDown(lambda: self.confirmName(user.name))
@@ -94,6 +94,7 @@ class WebSocket(WebSocketHandler):
             self.askForName()
 
     def handleReadyState(self, user, str):
+        print("handleReadyState")
         #check existence of name and message
         if not ProcessText.hasNameandMessage(str):
             self.write_message("who is the recipient and what is the message")
@@ -107,9 +108,10 @@ class WebSocket(WebSocketHandler):
         messageSuccess = self.messageNamedUser(user, recipientName, message)        
         if messageSuccess:
             user.state = UserState.Conversing
-
-        # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
-
+            # onTimeout reset will be false, when time runs out state will be back to ready
+            countdown =  CountDown(lambda: self.onTimeout(False))
+            countdown.runLonger(6)
+        
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
             self.write_message("could not recognize the recipient in your message")
@@ -134,11 +136,24 @@ class WebSocket(WebSocketHandler):
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
+        # cancels the previous countDown, restart countDown
+        self.restartCountDown(True)
         if ProcessText.hasRecipientName(str):
             recipientName, message = ProcessText.getNameandMessage(str)
             if not message:
                 message = str
             self.messageNamedUser(user, recipientName, message)
+            
         else:
             user.conversant.socket.write_message(str)
 
+    def restartCountDown(self, reset):
+        # TODO Currently I cant pass UserState.Ready around, so i am passing an int for now
+        countdown = CountDown(self.onTimeout, reset)
+        countdown.runLonger()
+
+    def onTimeout(self, reset):
+        if reset == True:
+            CountDown(user.setState, 2)
+        else:
+            CountDown.stop()

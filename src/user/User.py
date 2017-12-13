@@ -15,5 +15,18 @@ class User(object):
   """docstring for User"""
   def __init__(self):
     super(User, self).__init__()
+
+  def setState(self, newState):
+    if newState == 0:
+      self.state = UserState.Ready
+    elif newState == 1:
+      self.state = UserState.NameStaging
+    elif newState == 2:
+      self.newState = UserState.Ready
+    elif newState == 3:
+      self.newState = UserState.Conversing
+    else:
+      self.newState = UserState.Invalid
+    print("setState has now set Userstate to ", self.state)
     
 
