@@ -19,7 +19,7 @@ class CountDown(threading.Thread):
             self.event.wait(1)
 
     def runLonger(self, duration):
-        print("COUTNDOWN: Starting countdown threading method")
+        print("COUNTDOWN: Starting longer countdown threading method")
         self.event.clear()
         while not self.event.is_set():
             print("COUNTDOWN: executing lambda method...")
