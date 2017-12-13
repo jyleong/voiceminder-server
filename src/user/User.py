@@ -17,6 +17,16 @@ class User(object):
     super(User, self).__init__()
 
   def setState(self, newState):
-    state = newState
+    print("newState:", newState)
+    if newState == 0:
+      self.state = UserState.Ready
+    elif newState == 1:
+      self.state = UserState.NameStaging
+    elif newState == 2:
+      self.newState = UserState.Ready
+    elif newState == 3:
+      self.newState = UserState.Conversing
+    else:
+      self.newState = UserState.Invalid
     
 

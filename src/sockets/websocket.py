@@ -106,7 +106,8 @@ class WebSocket(WebSocketHandler):
         messageSuccess = self.messageNamedUser(user, recipientName, message)        
         if messageSuccess:
             user.state = UserState.Conversing
-            countdown = CountDown(user.setState, UserState.ready)
+            # TODO Currently I cant pass UserState.Ready around, so i am passing an int for now
+            countdown = CountDown(user.setState, 2)
             countdown.runLonger()
         # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
 
