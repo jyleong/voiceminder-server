@@ -12,7 +12,7 @@ class WebSocket(WebSocketHandler):
         self.write_message("State your name")
 
     def open(self):
-        self.id = str(uuid.uuid4())
+        print("SERVER: On new connection!")
         newUser = User()
         newUser.socket = self
         UserList.append(newUser)
@@ -27,7 +27,15 @@ class WebSocket(WebSocketHandler):
         #TODO: get user instance, given socket
         print("on_message: ", str)
         # guard
+        testing = ProcessText.checkTestingMode(str)
+
         user = self.currentUser()
+        if testing:
+            print("SERVER: In testing mode")
+            name = ProcessText.getUserName(str)
+            user.name = name
+            user.state = UserState.Ready
+
         if user is None:
             self.write_message('Fatal Error, user is None')
             return
