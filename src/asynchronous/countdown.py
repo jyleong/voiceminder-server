@@ -3,12 +3,12 @@ import time
 
 class CountDown(threading.Thread):
 
-    def __init__(self, method):
+    def __init__(self, method, duration=5):
         threading.Thread.__init__(self)
         self.event = threading.Event()
         # lambda method we must provide method arguemtsn to it
         self.method = method
-        self.duration = 5
+        self.duration = duration
 
     def run(self):
         print("COUTNDOWN: Starting countdown threading method")
@@ -16,15 +16,6 @@ class CountDown(threading.Thread):
             print("COUNTDOWN: executing lambda method...")
             self.method()
             time.sleep(self.duration)
-            self.event.wait(1)
-
-    def runLonger(self, duration):
-        print("COUNTDOWN: Starting longer countdown threading method")
-        self.event.clear()
-        while not self.event.is_set():
-            print("COUNTDOWN: executing lambda method...")
-            self.method()
-            time.sleep(duration)
             self.event.wait(1)
 
     def stop(self):
