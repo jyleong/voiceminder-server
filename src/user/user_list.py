@@ -21,6 +21,13 @@ class UserList(object):
     return False
 
   @classmethod
+
+  def userFromName(cls, name):
+    # assume no name conflicts...
+    users = [each for each in UserList.users if each.name == name]
+    return users[0] if users else None
+
+  @classmethod
   def userFromSocket(cls, socket):
     for u in cls.users:
       if u.socket == socket:
@@ -28,8 +35,15 @@ class UserList(object):
     return None
 
   @classmethod
+  def deleteUserBySocket(cls, socket):
+    for i in range(len(cls.users) - 1):
+      if cls.users[i].socket == socket:
+        del cls.users[i]
+
+  @classmethod
   def containsUser(cls, user):
     for u in cls.users:
       if u == user:
         return True
     return False
+

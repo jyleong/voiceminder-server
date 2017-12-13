@@ -1,37 +1,41 @@
-import uuid
 from tornado.websocket import WebSocketHandler
-from sockets.socket_instances import SocketInstances
-from textProcessing.ProcessText import ProcessingState, ProcessText
-from enum import Enum
+from textProcessing.ProcessText import ProcessText
+from asynchronous.countdown import CountDown
 from user.User import User
 from user.User import UserState
 from user.user_list import UserList
-
 
 class WebSocket(WebSocketHandler):
 
     def askForName(self):
         self.write_message("State your name")
 
-            
     def open(self):
-        self.id = str(uuid.uuid4())
+        print("SERVER: On new connection!")
+        self.countdown = None
         newUser = User()
         newUser.socket = self
         UserList.append(newUser)
 
-        print("UserList.containsUser(newUser): ", UserList.containsUser(newUser))
-        # SocketInstances.socketStorage[self.id] = self
         self.askForName()
 
     def currentUser(self):
         return UserList.userFromSocket(self)
 
     def on_message(self, str):
+        if str == "ping": return
         #TODO: get user instance, given socket
         print("on_message: ", str)
         # guard
+        testing = ProcessText.checkTestingMode(str)
+
         user = self.currentUser()
+        if testing:
+            print("SERVER: In testing mode")
+            name = ProcessText.getUserName(str)
+            user.name = name
+            user.state = UserState.Ready
+
         if user is None:
             self.write_message('Fatal Error, user is None')
             return
@@ -53,13 +57,15 @@ class WebSocket(WebSocketHandler):
         return
 
     def on_close(self):
-        SocketInstances.socketStorage.pop(self.id, 0)
+        user = self.currentUser()
+        UserList.deleteUserBySocket(user.socket)
         print("Socket closed.")
 
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
-            self.confirmName(name)
+            self.countdown = CountDown(lambda: self.confirmName(name))
+            self.countdown.start()
             user.state = UserState.NameStaging
         else:
             self.askForName()
@@ -69,22 +75,70 @@ class WebSocket(WebSocketHandler):
         user = self.currentUser()
         user.name = name
         user.state = UserState.NameStaging
-        #TODO: put a timer on user on a thread and callback to check back on user
-
 
     def handleNameStagingState(self, user, str):
+        
+        # empty string case also handled by client
+        if (not str):
+            self.countdown = CountDown(lambda: self.confirmName(user.name))
+            self.countdown.start()
+            return
+
         if ProcessText.isAffirmative(str):
+            self.countdown.stop()
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
+            self.countdown.stop()
             user.state = UserState.Nameless
             self.askForName()
 
     def handleReadyState(self, user, str):
-        print("handleReadyState")
-        pass
+        #check existence of name and message
+        if not ProcessText.hasNameandMessage(str):
+            self.write_message("who is the recipient and what is the message")
+            return
+
+        recipientName, message = ProcessText.getNameandMessage(str)
+        if not message:
+            # message body is empty, just copy whole input to message
+            message = str
+
+        messageSuccess = self.messageNamedUser(user, recipientName, message)        
+        if messageSuccess:
+            user.state = UserState.Conversing
+
+        # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
+
+    def messageNamedUser(self, user, recipientName, message):
+        if not recipientName:
+            self.write_message("could not recognize the recipient in your message")
+            return False
+        recipient = UserList.userFromName(recipientName)
+        if not recipient:
+            self.write_message("could not find the recipient from your message")
+            return False
+
+        # terminate conversation on other end if switching to new recipient
+        if user.conversant is not None and user.conversant != recipient:
+            user.conversant.conversant = None
+            user.conversant.state = UserState.Ready
+
+        # handle multi way conversation between users
+        user.conversant = recipient
+        user.conversant.conversant = user
+        user.conversant.state = UserState.Conversing
+        
+        recipient.socket.write_message(f"{user.name} says, {message}") 
+        return True
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
-        pass
+        if ProcessText.hasRecipientName(str):
+            recipientName, message = ProcessText.getNameandMessage(str)
+            if not message:
+                message = str
+            self.messageNamedUser(user, recipientName, message)
+        else:
+            user.conversant.socket.write_message(str)
 
