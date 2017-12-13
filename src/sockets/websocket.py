@@ -1,4 +1,3 @@
-import uuid
 from tornado.websocket import WebSocketHandler
 from textProcessing.ProcessText import ProcessText
 from asynchronous.countdown import CountDown
@@ -13,6 +12,7 @@ class WebSocket(WebSocketHandler):
 
     def open(self):
         print("SERVER: On new connection!")
+        self.countdown = None
         newUser = User()
         newUser.socket = self
         UserList.append(newUser)
@@ -64,7 +64,8 @@ class WebSocket(WebSocketHandler):
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
-            self.confirmName(name)
+            self.countdown = CountDown(lambda: self.confirmName(name))
+            self.countdown.start()
             user.state = UserState.NameStaging
         else:
             self.askForName()
@@ -74,20 +75,21 @@ class WebSocket(WebSocketHandler):
         user = self.currentUser()
         user.name = name
         user.state = UserState.NameStaging
-        countdown = CountDown(self.confirmName, name)
-        countdown.run()
 
     def handleNameStagingState(self, user, str):
         CountDown.stop()
         # empty string case also handled by client
         if (not str):
-            self.confirmName(user.name)
+            self.countdown = CountDown(lambda: self.confirmName(user.name))
+            self.countdown.start()
             return
 
         if ProcessText.isAffirmative(str):
+            self.countdown.stop()
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
+            self.countdown.stop()
             user.state = UserState.Nameless
             self.askForName()
 
@@ -106,12 +108,10 @@ class WebSocket(WebSocketHandler):
         messageSuccess = self.messageNamedUser(user, recipientName, message)        
         if messageSuccess:
             user.state = UserState.Conversing
-            # TODO Currently I cant pass UserState.Ready around, so i am passing an int for now
-            # countdown = CountDown(user.setState, 2)
-            countdown =  CountDown(self.onTimeout, False)
-            countdown.runLonger()
-        # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
-
+            # onTimeout reset will be false, when time runs out state will be back to ready
+            countdown =  CountDown(lambda: self.onTimeout(False))
+            countdown.runLonger(6)
+        
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
             self.write_message("could not recognize the recipient in your message")

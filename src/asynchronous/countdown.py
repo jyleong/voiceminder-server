@@ -1,25 +1,31 @@
 import threading
+import time
 
 class CountDown(threading.Thread):
-    def __init__(self, method, name):
+
+    def __init__(self, method):
         threading.Thread.__init__(self)
+        self.event = threading.Event()
+        # lambda method we must provide method arguemtsn to it
         self.method = method
-        self.name = name
-        self.countdownTimer = None
+        self.duration = 5
 
     def run(self):
-        self.countdownTimer = threading.Timer(10, function=self.method, args=(self.name,))
-        self.countdownTimer.start()
+        print("COUTNDOWN: Starting countdown threading method")
+        while not self.event.is_set():
+            print("COUNTDOWN: executing lambda method...")
+            self.method()
+            time.sleep(self.duration)
+            self.event.wait(1)
 
-    def runLonger(self):
-        self.countdownTimer = threading.Timer(11, function=self.method, args=(self.name,))
-        self.countdownTimer.start()
+    def runLonger(self, duration):
+        print("COUTNDOWN: Starting countdown threading method")
+        self.event.clear()
+        while not self.event.is_set():
+            print("COUNTDOWN: executing lambda method...")
+            self.method()
+            time.sleep(duration)
+            self.event.wait(1)
 
-    # static to stop all threads
-    @staticmethod
-    def stop():
-        allThreads = threading.enumerate()
-        main = threading.main_thread()
-        for t in allThreads:
-            if t is not main:
-                t.cancel()
+    def stop(self):
+        self.event.set()
