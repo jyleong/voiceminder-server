@@ -107,7 +107,8 @@ class WebSocket(WebSocketHandler):
         if messageSuccess:
             user.state = UserState.Conversing
             # TODO Currently I cant pass UserState.Ready around, so i am passing an int for now
-            countdown = CountDown(user.setState, 2)
+            # countdown = CountDown(user.setState, 2)
+            countdown =  CountDown(self.onTimeout, False)
             countdown.runLonger()
         # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
 
@@ -135,6 +136,8 @@ class WebSocket(WebSocketHandler):
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
+        # cancels the previous countDown, restart countDown
+        self.restartCountDown(True)
         if ProcessText.hasRecipientName(str):
             recipientName, message = ProcessText.getNameandMessage(str)
             if not message:
@@ -144,3 +147,13 @@ class WebSocket(WebSocketHandler):
         else:
             user.conversant.socket.write_message(str)
 
+    def restartCountDown(self, reset):
+        # TODO Currently I cant pass UserState.Ready around, so i am passing an int for now
+        countdown = CountDown(self.onTimeout, reset)
+        countdown.runLonger()
+
+    def onTimeout(self, reset):
+        if reset == True:
+            CountDown(user.setState, 2)
+        else:
+            pass

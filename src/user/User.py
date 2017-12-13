@@ -17,7 +17,6 @@ class User(object):
     super(User, self).__init__()
 
   def setState(self, newState):
-    print("newState:", newState)
     if newState == 0:
       self.state = UserState.Ready
     elif newState == 1:
@@ -28,5 +27,6 @@ class User(object):
       self.newState = UserState.Conversing
     else:
       self.newState = UserState.Invalid
+    print("setState has now set Userstate to ", self.state)
     
 
