@@ -78,7 +78,6 @@ class WebSocket(WebSocketHandler):
 
     def handleNameStagingState(self, user, str):
         # empty string case also handled by client
-        CountDown.stop()
         if (not str):
             self.countdown = CountDown(lambda: self.confirmName(user.name))
             self.countdown.start()
@@ -110,7 +109,7 @@ class WebSocket(WebSocketHandler):
             user.state = UserState.Conversing
             # when timer runs out, setState to UserState.Ready
             countdown =  CountDown(lambda: user.setState(2))
-            countdown.run(6)
+            countdown.start()
         
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:

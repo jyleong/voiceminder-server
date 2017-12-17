@@ -10,6 +10,7 @@ class CountDown(threading.Thread):
         self.method = method
         self.duration = duration
 
+    # this method doesn work if you call it
     def run(self):
         print("COUTNDOWN: Starting countdown threading method")
         while not self.event.is_set():
