@@ -24,7 +24,7 @@ class EventLoop(threading.Thread):
 
 class Countdown(threading.Thread):
 
-    def __init__(self, method, duration=5):
+    def __init__(self, method, duration=30):
         threading.Thread.__init__(self)
         self.event = threading.Event()
         # lambda method we must provide method arguements to it
@@ -33,5 +33,16 @@ class Countdown(threading.Thread):
 
     def run(self):
         print("COUNTDOWN: Starting countdown threading method")
-        time.sleep(self.duration)
-        self.method()
+        count = self.duration
+        while count > 0 and not self.event.is_set():
+            count -= 1
+            time.sleep(1)
+            self.event.wait(1)
+            print(count)
+
+        if count <= 0:
+            self.method()
+            print("COUNTDOWN: Executed lambda method")
+
+    def stop(self):
+        self.event.set()
