@@ -28,5 +28,6 @@ class User(object):
     else:
       self.newState = UserState.Invalid
     print("setState has now set Userstate to ", self.state)
+
     
 

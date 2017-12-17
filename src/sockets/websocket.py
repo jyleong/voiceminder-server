@@ -65,7 +65,7 @@ class WebSocket(WebSocketHandler):
         name = ProcessText.getUserName(str)
         if name is not None:
             self.countdown = CountDown(lambda: self.confirmName(name))
-            self.countdown.start()
+            self.countdown.run()
             user.state = UserState.NameStaging
         else:
             self.askForName()
@@ -77,7 +77,6 @@ class WebSocket(WebSocketHandler):
         user.state = UserState.NameStaging
 
     def handleNameStagingState(self, user, str):
-        CountDown.stop()
         # empty string case also handled by client
         if (not str):
             self.countdown = CountDown(lambda: self.confirmName(user.name))
@@ -147,6 +146,7 @@ class WebSocket(WebSocketHandler):
             user.conversant.socket.write_message(str)
 
     def restartCountDown(self):
-        # cancels the previous countDown, restart countDown
+        # cancels the previous countDown, 
+        # restart countDown
         CountDown(lambda: user.setState(2))
         CountDown.stop()
