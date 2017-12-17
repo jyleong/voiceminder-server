@@ -6,7 +6,7 @@ class CountDown(threading.Thread):
     def __init__(self, method, duration=5):
         threading.Thread.__init__(self)
         self.event = threading.Event()
-        # lambda method we must provide method arguemtsn to it
+        # lambda method we must provide method arguements to it
         self.method = method
         self.duration = duration
 

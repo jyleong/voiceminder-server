@@ -108,6 +108,7 @@ class WebSocket(WebSocketHandler):
         if messageSuccess:
             user.state = UserState.Conversing
             # when timer runs out, setState to UserState.Ready
+            print('messageSuccess, begin Conversing countDown')
             self.countdown =  CountDown(lambda: user.setState(2))
             self.countdown.start()
         
