@@ -1,6 +1,6 @@
 from tornado.websocket import WebSocketHandler
 from textProcessing.ProcessText import ProcessText
-from asynchronous.countdown import CountDown
+from asynchronous.countdown import CountDown, CountDowntoStop
 from user.User import User
 from user.User import UserState
 from user.user_list import UserList
@@ -93,7 +93,7 @@ class WebSocket(WebSocketHandler):
             self.askForName()
 
     def handleReadyState(self, user, str):
-        print("handleReadyState")
+        print("handleReadyState")   
         #check existence of name and message
         if not ProcessText.hasNameandMessage(str):
             self.write_message("who is the recipient and what is the message")
@@ -108,8 +108,7 @@ class WebSocket(WebSocketHandler):
         if messageSuccess:
             user.state = UserState.Conversing
             # when timer runs out, setState to UserState.Ready
-            print('messageSuccess, begin Conversing countDown')
-            self.countdown =  CountDown(lambda: user.setState(2))
+            self.countdown = CountDowntoStop(user.setState, 2)
             self.countdown.start()
         
     def messageNamedUser(self, user, recipientName, message):

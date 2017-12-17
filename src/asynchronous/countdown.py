@@ -2,7 +2,6 @@ import threading
 import time
 
 class CountDown(threading.Thread):
-
     def __init__(self, method, duration=5):
         threading.Thread.__init__(self)
         self.event = threading.Event()
@@ -21,3 +20,18 @@ class CountDown(threading.Thread):
 
     def stop(self):
         self.event.set()
+
+class CountDowntoStop(threading.Thread):
+    def __init__(self, method, state):
+        threading.Thread.__init__(self)
+        self.method = method
+        self.state = state
+        self.countdownTimer = None
+
+    def run(self):
+        self.countdownTimer = threading.Timer(5, function=self.method, args=(self.state,))
+        self.countdownTimer.start()
+
+    @staticmethod
+    def stop():
+        self.countdownTimer.cancel()
