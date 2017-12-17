@@ -12,8 +12,14 @@ class User(object):
   name = None
   state = UserState.Nameless
   conversant = None
+
   """docstring for User"""
   def __init__(self):
     super(User, self).__init__()
+
+  def setState(self, newState):
+    self.state = newState
+    print("setState has now set Userstate to ", self.state)
+
     
 

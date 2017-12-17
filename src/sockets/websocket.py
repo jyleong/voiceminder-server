@@ -1,8 +1,7 @@
 from tornado.websocket import WebSocketHandler
 from textProcessing.ProcessText import ProcessText
-from asynchronous.countdown import CountDown
-from user.User import User
-from user.User import UserState
+from asynchronous.countdown import EventLoop, Countdown
+from user.User import User, UserState
 from user.user_list import UserList
 
 class WebSocket(WebSocketHandler):
@@ -12,7 +11,7 @@ class WebSocket(WebSocketHandler):
 
     def open(self):
         print("SERVER: On new connection!")
-        self.countdown = None
+        self.eventLoop = None
         newUser = User()
         newUser.socket = self
         UserList.append(newUser)
@@ -64,8 +63,8 @@ class WebSocket(WebSocketHandler):
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
-            self.countdown = CountDown(lambda: self.confirmName(name))
-            self.countdown.start()
+            self.eventLoop = EventLoop(lambda: self.confirmName(name))
+            self.eventLoop.start()
             user.state = UserState.NameStaging
         else:
             self.askForName()
@@ -75,21 +74,24 @@ class WebSocket(WebSocketHandler):
         user = self.currentUser()
         user.name = name
         user.state = UserState.NameStaging
+        self.countdown = CountDown(lambda: self.confirmName(name))
+        self.countdown.run()
 
     def handleNameStagingState(self, user, str):
-        
         # empty string case also handled by client
         if (not str):
-            self.countdown = CountDown(lambda: self.confirmName(user.name))
-            self.countdown.start()
+            self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
+            self.eventLoop.start()
             return
 
         if ProcessText.isAffirmative(str):
-            self.countdown.stop()
+            self.eventLoop.stop()
+            self.eventLoop = None
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
-            self.countdown.stop()
+            self.eventLoop.stop()
+            self.eventLoop = None
             user.state = UserState.Nameless
             self.askForName()
 
@@ -107,9 +109,10 @@ class WebSocket(WebSocketHandler):
         messageSuccess = self.messageNamedUser(user, recipientName, message)        
         if messageSuccess:
             user.state = UserState.Conversing
-
-        # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
-
+            # when timer runs out, setState to UserState.Ready
+            print('messageSuccess, begin Conversing countDown')
+            self.restartCountDown(user)
+        
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
             self.write_message("could not recognize the recipient in your message")
@@ -134,6 +137,7 @@ class WebSocket(WebSocketHandler):
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
+        self.restartCountDown(user)
         if ProcessText.hasRecipientName(str):
             recipientName, message = ProcessText.getNameandMessage(str)
             if not message:
@@ -142,3 +146,9 @@ class WebSocket(WebSocketHandler):
         else:
             user.conversant.socket.write_message(str)
 
+    def restartCountDown(self, user):
+        # cancels the previous countDown,
+        self.eventLoop = None
+        # restart countDown
+        self.eventLoop = Countdown(lambda: user.setState(UserState.Ready))
+        self.eventLoop.start()
