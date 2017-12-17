@@ -12,6 +12,7 @@ class WebSocket(WebSocketHandler):
     def open(self):
         print("SERVER: On new connection!")
         self.eventLoop = None
+        self.countDown = None
         newUser = User()
         newUser.socket = self
         UserList.append(newUser)
@@ -111,7 +112,8 @@ class WebSocket(WebSocketHandler):
             user.state = UserState.Conversing
             # when timer runs out, setState to UserState.Ready
             print('messageSuccess, begin Conversing countDown')
-            self.restartCountDown(user)
+            self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
+            self.countDown.start()
         
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
@@ -136,7 +138,7 @@ class WebSocket(WebSocketHandler):
         return True
 
     def handleConversingState(self, user, str):
-        print("handleConversingState")
+        print("handleConversingState user: {}".format(user.name))
         self.restartCountDown(user)
         if ProcessText.hasRecipientName(str):
             recipientName, message = ProcessText.getNameandMessage(str)
@@ -148,7 +150,12 @@ class WebSocket(WebSocketHandler):
 
     def restartCountDown(self, user):
         # cancels the previous countDown,
-        self.eventLoop = None
+        print("COUNTDOWN: Stopping previous thread")
+        if self.countDown:
+            self.countDown.stop()
+            self.countDown = None
+
         # restart countDown
-        self.eventLoop = Countdown(lambda: user.setState(UserState.Ready))
-        self.eventLoop.start()
+        print("restartCountDown: making new instance")
+        self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
+        self.countDown.start()

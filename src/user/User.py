@@ -1,25 +1,25 @@
 from enum import Enum
 
 class UserState(Enum):
-  Nameless = 0
-  NameStaging = 1
-  Ready = 2
-  Conversing = 3
-  Invalid = 99
+    Nameless = 0
+    NameStaging = 1
+    Ready = 2
+    Conversing = 3
+    Invalid = 99
 
 class User(object):
-  socket = None
-  name = None
-  state = UserState.Nameless
-  conversant = None
+    socket = None
+    name = None
+    state = UserState.Nameless
+    conversant = None
 
-  """docstring for User"""
-  def __init__(self):
-    super(User, self).__init__()
+    """docstring for User"""
+    def __init__(self):
+        super(User, self).__init__()
 
-  def setState(self, newState):
-    self.state = newState
-    print("setState has now set Userstate to ", self.state)
+    def setState(self, newState):
+        self.state = newState
+        print("setState has now set Userstate to ", self.state)
 
     
 
