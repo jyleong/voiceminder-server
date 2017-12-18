@@ -1,9 +1,13 @@
 from tornado.websocket import WebSocketHandler
 from textProcessing.ProcessText import ProcessText
-from asynchronous.countdown import CountDown
+from asynchronous.countdown import CountDown, CountDowntoStop
 from user.User import User
 from user.User import UserState
 from user.user_list import UserList
+
+import calendar
+from threading import Timer
+import time
 
 class WebSocket(WebSocketHandler):
 
@@ -64,6 +68,7 @@ class WebSocket(WebSocketHandler):
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
+            # self.confirmName(name)
             self.countdown = CountDown(lambda: self.confirmName(name))
             self.countdown.start()
             user.state = UserState.NameStaging
@@ -77,7 +82,6 @@ class WebSocket(WebSocketHandler):
         user.state = UserState.NameStaging
 
     def handleNameStagingState(self, user, str):
-        
         # empty string case also handled by client
         if (not str):
             self.countdown = CountDown(lambda: self.confirmName(user.name))
@@ -94,6 +98,7 @@ class WebSocket(WebSocketHandler):
             self.askForName()
 
     def handleReadyState(self, user, str):
+        print("handleReadyState")   
         #check existence of name and message
         if not ProcessText.hasNameandMessage(str):
             self.write_message("who is the recipient and what is the message")
@@ -107,9 +112,10 @@ class WebSocket(WebSocketHandler):
         messageSuccess = self.messageNamedUser(user, recipientName, message)        
         if messageSuccess:
             user.state = UserState.Conversing
-
-        # TODO: set timer on UserState, if no message for 30 seconds, then back to ready
-
+            # when timer runs out, setState to UserState.Ready
+            # self.countdown = CountDowntoStop(user.setState, 2)
+            # self.countdown.start()
+        
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
             self.write_message("could not recognize the recipient in your message")
@@ -134,11 +140,29 @@ class WebSocket(WebSocketHandler):
 
     def handleConversingState(self, user, str):
         print("handleConversingState")
+        
+        self.handleTimeOut(user)
+
         if ProcessText.hasRecipientName(str):
             recipientName, message = ProcessText.getNameandMessage(str)
             if not message:
                 message = str
-            self.messageNamedUser(user, recipientName, message)
+            self.messageNamedUser(user, recipientName, message)    
         else:
             user.conversant.socket.write_message(str)
 
+    def handleTimeOut(self, user):
+        #TODO: user's conversant's timestamp should also be set
+        n_seconds = 15.0
+        user.timestamp = calendar.timegm(time.gmtime())
+        t = Timer(n_seconds, self.check_back, (user, n_seconds, user.timestamp))
+        t.start() 
+
+    def check_back(self, user, n_seconds, userTimeStamp):
+        now = calendar.timegm(time.gmtime())
+        timeDiff = now - userTimeStamp
+        print("timeDiff: {}".format(timeDiff))
+        if timeDiff >= n_seconds and user.state is UserState.Conversing:
+            # TODO: user and the user's conversant should go into ready state
+            print('user has timeout out of conversing state, moving back to ReadyState')
+            user.state = UserState.Ready

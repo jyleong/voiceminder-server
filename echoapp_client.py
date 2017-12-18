@@ -43,7 +43,7 @@ def on_open(ws):
 if __name__ == "__main__":
     # websocket.enableTrace(True)
     parser = argparse.ArgumentParser(description='Arguments to start echoapp_client')
-    parser.add_argument('--host', type=str, default="ws://voiceminder.localtunnel.me/websocket/",
+    parser.add_argument('--host', type=str, default="ws://voiceminder2.localtunnel.me/websocket/",
                     help='an integer for the accumulator')
     parser.add_argument('--test', '-t', dest='test', action='store_true',
                     help='if argument is specified, puts the client in test mode')
