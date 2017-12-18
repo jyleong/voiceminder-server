@@ -12,6 +12,7 @@ class User(object):
   name = None
   state = UserState.Nameless
   conversant = None
+  timestamp = None
   """docstring for User"""
   def __init__(self):
     super(User, self).__init__()

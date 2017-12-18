@@ -11,7 +11,7 @@ class CountDown(threading.Thread):
 
     # this method doesn work if you call it
     def run(self):
-        print("COUTNDOWN: Starting countdown threading method")
+        print("COUNTDOWN: Starting countdown threading method")
         while not self.event.is_set():
             print("COUNTDOWN: executing lambda method...")
             self.method()
@@ -29,7 +29,7 @@ class CountDowntoStop(threading.Thread):
         self.countdownTimer = None
 
     def run(self):
-        self.countdownTimer = threading.Timer(5, function=self.method, args=(self.state,))
+        self.countdownTimer = threading.Timer(15, function=self.method, args=(self.state,))
         self.countdownTimer.start()
 
     @staticmethod
