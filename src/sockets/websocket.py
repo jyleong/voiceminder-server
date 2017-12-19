@@ -75,8 +75,6 @@ class WebSocket(WebSocketHandler):
         user = self.currentUser()
         user.name = name
         user.state = UserState.NameStaging
-        self.countdown = CountDown(lambda: self.confirmName(name))
-        self.countdown.run()
 
     def handleNameStagingState(self, user, str):
         # empty string case also handled by client
