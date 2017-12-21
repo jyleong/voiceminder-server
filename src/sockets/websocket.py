@@ -1,6 +1,6 @@
 from tornado.websocket import WebSocketHandler
 from textProcessing.ProcessText import ProcessText
-from asynchronous.countdown import EventLoop, Countdown
+# from asynchronous.countdown import EventLoop, Countdown
 from user.User import User, UserState
 from user.user_list import UserList
 
@@ -11,8 +11,8 @@ class WebSocket(WebSocketHandler):
 
     def open(self):
         print("SERVER: On new connection!")
-        self.eventLoop = None
-        self.countDown = None
+        # self.eventLoop = None
+        # self.countDown = None
         newUser = User()
         newUser.socket = self
         UserList.append(newUser)
@@ -64,8 +64,9 @@ class WebSocket(WebSocketHandler):
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
-            self.eventLoop = EventLoop(lambda: self.confirmName(name))
-            self.eventLoop.start()
+            self.confirmName(name)
+            # self.eventLoop = EventLoop(lambda: self.confirmName(name))
+            # self.eventLoop.start()
             user.state = UserState.NameStaging
         else:
             self.askForName()
@@ -78,19 +79,19 @@ class WebSocket(WebSocketHandler):
 
     def handleNameStagingState(self, user, str):
         # empty string case also handled by client
-        if (not str):
-            self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
-            self.eventLoop.start()
-            return
+        # if (not str):
+        #     self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
+        #     self.eventLoop.start()
+        #     return
 
         if ProcessText.isAffirmative(str):
-            self.eventLoop.stop()
-            self.eventLoop = None
+            # self.eventLoop.stop()
+            # self.eventLoop = None
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
-            self.eventLoop.stop()
-            self.eventLoop = None
+            # self.eventLoop.stop()
+            # self.eventLoop = None
             user.state = UserState.Nameless
             self.askForName()
 
@@ -110,8 +111,8 @@ class WebSocket(WebSocketHandler):
             user.state = UserState.Conversing
             # when timer runs out, setState to UserState.Ready
             print('messageSuccess, begin Conversing countDown')
-            self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
-            self.countDown.start()
+            # self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
+            # self.countDown.start()
         
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
@@ -137,7 +138,7 @@ class WebSocket(WebSocketHandler):
 
     def handleConversingState(self, user, str):
         print("handleConversingState user: {}".format(user.name))
-        self.restartCountDown(user)
+        # self.restartCountDown(user)
         if ProcessText.hasRecipientName(str):
             recipientName, message = ProcessText.getNameandMessage(str)
             if not message:
@@ -146,14 +147,14 @@ class WebSocket(WebSocketHandler):
         else:
             user.conversant.socket.write_message(str)
 
-    def restartCountDown(self, user):
-        # cancels the previous countDown,
-        print("COUNTDOWN: Stopping previous thread")
-        if self.countDown:
-            self.countDown.stop()
-            self.countDown = None
+    # def restartCountDown(self, user):
+    #     # cancels the previous countDown,
+    #     print("COUNTDOWN: Stopping previous thread")
+    #     if self.countDown:
+    #         self.countDown.stop()
+    #         self.countDown = None
 
-        # restart countDown
-        print("restartCountDown: making new instance")
-        self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
-        self.countDown.start()
+    #     # restart countDown
+    #     print("restartCountDown: making new instance")
+    #     self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
+    #     self.countDown.start()
