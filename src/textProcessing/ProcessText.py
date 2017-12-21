@@ -1,10 +1,3 @@
-
-from enum import Enum
-
-class ProcessingState(Enum):
-    Recognition = 1
-    Communication = 2
-
 class ProcessText(object):
     """
     Class of text processing methods in python
@@ -24,17 +17,7 @@ class ProcessText(object):
         and extract the name
         will need NLP properly here
     """
-    @staticmethod
-    def getEnum(userInput):
-        print("getEnum: ", userInput)
-        if ProcessText.isSelfIdentification(userInput):
-            print("isSelfIdentification")
-            enum = ProcessingState.Recognition
-        elif ProcessText.isUserMessaging(userInput):
-            print("isUserMessaging")
-            enum = ProcessingState.Communication
-        return enum
-
+    
     @staticmethod
     def getUserName(userInput):
         if userInput is None or "": return None
@@ -44,10 +27,19 @@ class ProcessText(object):
         recipientName = inputlist[-1].lower()
         return recipientName
 
+    '''
+    method to check if string indicates we are running
+    the client via testing mode
+    '''
+    @staticmethod
+    def checkTestingMode(str):
+        inputList = str.split()[0]
+        return inputList == "TEST_MODE:"
+
     @staticmethod
     def isAffirmative(userInput):
         inputList = userInput.split()
-        affirmativeList = ['yes', 'yep', 'ya', 'correct', 'right', 'yah', 'maybe', 'may be']
+        affirmativeList = ['yes', 'yep', 'ya', 'yeah', 'correct', 'right', 'yah', 'maybe', 'may be']
         for word in inputList:
             if word in affirmativeList:
                 return True
@@ -61,10 +53,19 @@ class ProcessText(object):
     @staticmethod
     def getNameandMessage(userInput):
         # TODO More sophis later on
-        inputlist = userInput.split()
-        recipientName = inputlist[1]
-        message = ' '.join(inputlist[2:])
+        inputList = userInput.split()
+        recipientName = inputList[1]
+        message = ' '.join(inputList[2:])
         return recipientName , message
+
+    @staticmethod
+    def hasNameandMessage(userInput):
+        #TODO More sophis later on
+        inputList = userInput.split()
+        if len(inputList) < 2:
+            return False
+        else:
+            return True
 
     @staticmethod
     def hasRecipientName(userInput):
