@@ -101,9 +101,8 @@ class WebSocket(WebSocketHandler):
         if messageSuccess:
             user.state = UserState.Conversing
             # when timer runs out, setState to UserState.Ready
-            print('messageSuccess, begin Conversing countDown')
-            self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
-            self.countDown.start()
+            print('messageSuccess, calling beginCountDown')
+            beginCountDown(user)
         
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
@@ -139,6 +138,11 @@ class WebSocket(WebSocketHandler):
             self.messageNamedUser(user, recipientName, message)
         else:
             user.conversant.socket.write_message(str)
+            
+    def beginCountDown(self, user, time=10):
+        print("beginCountDown: Starting Countdown.")
+        self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=time)
+        self.countDown.start()
 
     def restartCountDown(self, user):
         # cancels the previous countDown,
@@ -149,5 +153,4 @@ class WebSocket(WebSocketHandler):
 
         # restart countDown
         print("restartCountDown: making new instance")
-        self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
-        self.countDown.start()
+        beginCountDown(user)
