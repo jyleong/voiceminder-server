@@ -2,21 +2,18 @@ from tornado.websocket import WebSocketHandler
 from textProcessing.ProcessText import ProcessText
 from asynchronous.countdown import EventLoop, Countdown
 from user.User import User, UserState
-from user.user_list import UserList
+from user.user_list import UseFzrList
 
 class WebSocket(WebSocketHandler):
 
     def askForName(self):
-        self.write_message("State your name")
+        self.write_message("Please state your name:")
 
     def open(self):
         print("SERVER: On new connection!")
         self.eventLoop = None
         self.countDown = None
-        newUser = User()
-        newUser.socket = self
-        UserList.append(newUser)
-
+        UserList.append(User(self))
         self.askForName()
 
     def currentUser(self):
@@ -37,20 +34,16 @@ class WebSocket(WebSocketHandler):
             user.state = UserState.Ready
 
         if user is None:
-            self.write_message('Fatal Error, user is None')
-            return
-        state = user.state
-        if state is UserState.Invalid:
-            self.write_message('Invalid state, start over')
-            return
-
-        if state is UserState.Nameless:
+            self.write_message('Fatal Error! User is None.')
+        if user.state is UserState.Invalid:
+            self.write_message('Invalid state! Start over.')
+        elif user.state is UserState.Nameless:
             self.handleNamelessState(user, str)
-        elif state is UserState.NameStaging:
+        elif user.state is UserState.NameStaging:
             self.handleNameStagingState(user, str)
-        elif state is UserState.Ready:
+        elif user.state is UserState.Ready:
             self.handleReadyState(user, str)
-        elif state is UserState.Conversing:
+        elif user.state is UserState.Conversing:
             self.handleConversingState(user, str)
         else:
             self.write_message('Invalid state, start over')
@@ -82,22 +75,21 @@ class WebSocket(WebSocketHandler):
             self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
             self.eventLoop.start()
             return
-
+        
+        self.eventLoop.stop()
+        self.eventLoop = None
+        
         if ProcessText.isAffirmative(str):
-            self.eventLoop.stop()
-            self.eventLoop = None
             user.state = UserState.Ready
             self.write_message(f"Hello {user.name}, now ready to send messages")
         else:
-            self.eventLoop.stop()
-            self.eventLoop = None
             user.state = UserState.Nameless
             self.askForName()
 
     def handleReadyState(self, user, str):
         #check existence of name and message
         if not ProcessText.hasNameandMessage(str):
-            self.write_message("who is the recipient and what is the message")
+            self.write_message("Who is the recipient, and what is your message?")
             return
 
         recipientName, message = ProcessText.getNameandMessage(str)
@@ -109,15 +101,16 @@ class WebSocket(WebSocketHandler):
         if messageSuccess:
             user.state = UserState.Conversing
             # when timer runs out, setState to UserState.Ready
-            print('messageSuccess, begin Conversing countDown')
-            self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
-            self.countDown.start()
+            print('messageSuccess, calling beginCountDown')
+            beginCountDown(user)
         
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
             self.write_message("could not recognize the recipient in your message")
             return False
+        
         recipient = UserList.userFromName(recipientName)
+        
         if not recipient:
             self.write_message("could not find the recipient from your message")
             return False
@@ -145,6 +138,11 @@ class WebSocket(WebSocketHandler):
             self.messageNamedUser(user, recipientName, message)
         else:
             user.conversant.socket.write_message(str)
+            
+    def beginCountDown(self, user, time=10):
+        print("beginCountDown: Starting Countdown.")
+        self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=time)
+        self.countDown.start()
 
     def restartCountDown(self, user):
         # cancels the previous countDown,
@@ -155,5 +153,4 @@ class WebSocket(WebSocketHandler):
 
         # restart countDown
         print("restartCountDown: making new instance")
-        self.countDown = Countdown(lambda: user.setState(UserState.Ready), duration=10)
-        self.countDown.start()
+        beginCountDown(user)

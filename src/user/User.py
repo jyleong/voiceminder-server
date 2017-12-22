@@ -6,7 +6,7 @@ class UserState(Enum):
     Ready = 2
     Conversing = 3
     Invalid = 99
-
+    
 class User(object):
     socket = None
     name = None
@@ -14,12 +14,10 @@ class User(object):
     conversant = None
 
     """docstring for User"""
-    def __init__(self):
+    def __init__(self, s = None):
         super(User, self).__init__()
-
+        socket = s
+    
     def setState(self, newState):
         self.state = newState
-        print("setState has now set Userstate to ", self.state)
-
-    
-
+        print("User state set to ", self.state)

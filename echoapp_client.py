@@ -12,7 +12,6 @@ TEST_MODE = False
 def on_message(ws, message):
     print(message)
 
-
 def on_error(ws, error):
     print(error)
 

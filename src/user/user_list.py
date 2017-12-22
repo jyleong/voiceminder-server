@@ -3,7 +3,7 @@ class UserList(object):
   users = []
   def __new__(cls):
     if UserList.__instance is None:
-        UserList.__instance = object.__new__(cls)
+      UserList.__instance = object.__new__(cls)
     return UserList.__instance
   
   #happens on connection
@@ -21,7 +21,6 @@ class UserList(object):
     return False
 
   @classmethod
-
   def userFromName(cls, name):
     # assume no name conflicts...
     users = [each for each in UserList.users if each.name == name]
@@ -42,8 +41,7 @@ class UserList(object):
 
   @classmethod
   def containsUser(cls, user):
-    for u in cls.users:
-      if u == user:
-        return True
+    if user in cls.users:
+      return True
     return False
 
