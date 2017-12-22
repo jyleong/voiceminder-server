@@ -6,11 +6,11 @@ class EventLoop(threading.Thread):
     def __init__(self, method, duration=5):
         threading.Thread.__init__(self)
         self.event = threading.Event()
-        # lambda method we must provide method arguements to it
+        # lambda method we must provide method arguments to it
         self.method = method
         self.duration = duration
 
-    # this method doesn work if you call it
+    # this method doesn't work if you call it directly
     def run(self):
         print("EVENTLOOP: Starting eventloop threading method")
         while not self.event.is_set():
@@ -27,7 +27,7 @@ class Countdown(threading.Thread):
     def __init__(self, method, duration=30):
         threading.Thread.__init__(self)
         self.event = threading.Event()
-        # lambda method we must provide method arguements to it
+        # lambda method we must provide method arguments to it
         self.method = method
         self.duration = duration
 
