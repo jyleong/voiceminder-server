@@ -20,7 +20,6 @@ def speak(incomingtext):
     tts.save("incomingtext.mp3")
     os.system("mpg321 incomingtext.mp3")
     SPEAKING = False
-    time.sleep(0.0001)
     THREADLOCK.release() # end critical section
 
 recognizer = speech_recognition.Recognizer()
@@ -59,11 +58,13 @@ def on_open(ws):
     def deliver(*args):
         global SPEAKING
         while True:
+            THREADLOCK.acquire()
             if not SPEAKING:
                 raw = listen()
                 print("listen(): " + raw)
                 if raw:
                     ws.send(raw)
+            THREADLOCK.release()
     runThread = Thread(target=deliver)
     runThread.daemon = False
     runThread.start()
