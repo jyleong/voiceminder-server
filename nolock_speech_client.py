@@ -3,13 +3,13 @@ from gtts import gTTS
 import os
 
 import websocket
-# from threading import Thread
-# import time
-# import sys
-# import argparse
+from threading import Thread
+import time
+import sys
+import argparse
 
-# USER_NAME = ""
-# TEST_MODE = False
+USER_NAME = ""
+TEST_MODE = False
 
 speaking = False
 
@@ -46,6 +46,9 @@ def listen():
 
     return ""
 
+def on_message(ws, message):
+    speak(message)
+
 def on_error(ws, error):
     print(error)
 
@@ -53,26 +56,42 @@ def on_close(ws):
     speak("closed")
     print("### closed ###")
 
-def on_message(ws, message):
-    queue = []
-    if speaking:
-        speak(message)
-    else:
-        queue.enque(message)
-        # when speaking set back to true, deque and speak the message
-        # when message is done speaking, set speaking back to false
-
 def on_open(ws):
-    while True:
-        if not speaking:
-            raw = listen()
-            # when listen is complete, set speaking back to true
-            if raw:
-                ws.send(raw)
-    #handle ping later 
+    def deliver(*args):
+        if USER_NAME and TEST_MODE:
+            ws.send("TEST_MODE: " + USER_NAME)
+        else:
+            while True:
+                if not speaking:
+                    raw = listen()
+                    if raw:
+                        ws.send(raw)
+    runThread = Thread(target=deliver)
+    runThread.daemon = False
+    runThread.start()
+
+    def ping(*args):
+        while True:
+            time.sleep(1)
+            ws.send("ping")
+
+    Thread(target=ping).start()
+
 
 if __name__ == "__main__":
-    host = "ws://voiceminder.localtunnel.me/websocket/"
+    # websocket.enableTrace(True)
+    parser = argparse.ArgumentParser(description='Arguments to start echoapp_client')
+    parser.add_argument('--host', type=str, default="ws://voiceminder.localtunnel.me/websocket/",
+                    help='an integer for the accumulator')
+    parser.add_argument('--test', '-t', dest='test', action='store_true',
+                    help='if argument is specified, puts the client in test mode')
+    parser.add_argument('--name', '-n', required='--test' in sys.argv, type=str,
+        help="specify the name of user to create socket if in test mode")
+    args = parser.parse_args()
+    host = args.host
+    if args.test:
+        TEST_MODE = args.test
+        USER_NAME = args.name
     ws = websocket.WebSocketApp(host,
                                 on_message=on_message,
                                 on_error=on_error,
