@@ -3,23 +3,24 @@ from gtts import gTTS
 import os
 
 import websocket
-from threading import Thread
+from threading import Thread, Lock
 import time
-import sys
 import argparse
 
-USER_NAME = ""
-TEST_MODE = False
+SPEAKING = False
 
-speaking = False
+THREADLOCK = Lock()
 
 def speak(incomingtext):
-    speaking = True
+    global SPEAKING
+    THREADLOCK.acquire() # begin critical section
+    SPEAKING = True
     print(incomingtext)
     tts = gTTS(text=incomingtext, lang='en')
     tts.save("incomingtext.mp3")
     os.system("mpg321 incomingtext.mp3")
-    speaking = False
+    SPEAKING = False
+    THREADLOCK.release() # end critical section
 
 recognizer = speech_recognition.Recognizer()
 def listen():
@@ -32,9 +33,6 @@ def listen():
         audio = recognizer.listen(source, timeout=300, phrase_time_limit=1000)
 
     try:
-        # print(recognizer.recognize_sphinx(audio))
-        # return recognizer.recognize_sphinx(audio)
-        print(recognizer.recognize_google(audio))
         return recognizer.recognize_google(audio)
         # for testing purposes, we're just using the default API key
         # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
@@ -58,14 +56,15 @@ def on_message(ws, message):
 
 def on_open(ws):
     def deliver(*args):
-        if USER_NAME and TEST_MODE:
-            ws.send("TEST_MODE: " + USER_NAME)
-        else:
-            while True:
-                if not speaking:
-                    raw = listen()
-                    if raw:
-                        ws.send(raw)
+        global SPEAKING
+        while True:
+            THREADLOCK.acquire()
+            if not SPEAKING:
+                raw = listen()
+                print("listen(): " + raw)
+                if raw:
+                    ws.send(raw)
+            THREADLOCK.release()
     runThread = Thread(target=deliver)
     runThread.daemon = False
     runThread.start()
@@ -80,18 +79,11 @@ def on_open(ws):
 
 if __name__ == "__main__":
     # websocket.enableTrace(True)
-    parser = argparse.ArgumentParser(description='Arguments to start echoapp_client')
+    parser = argparse.ArgumentParser(description='Arguments to start speech client')
     parser.add_argument('--host', type=str, default="ws://voiceminder.localtunnel.me/websocket/",
                     help='an integer for the accumulator')
-    parser.add_argument('--test', '-t', dest='test', action='store_true',
-                    help='if argument is specified, puts the client in test mode')
-    parser.add_argument('--name', '-n', required='--test' in sys.argv, type=str,
-        help="specify the name of user to create socket if in test mode")
     args = parser.parse_args()
     host = args.host
-    if args.test:
-        TEST_MODE = args.test
-        USER_NAME = args.name
     ws = websocket.WebSocketApp(host,
                                 on_message=on_message,
                                 on_error=on_error,

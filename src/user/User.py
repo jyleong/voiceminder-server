@@ -19,7 +19,7 @@ class User(object):
 
     def setState(self, newState):
         self.state = newState
-        print("setState has now set Userstate to ", self.state)
+        print("User {} is now in state {}".format(self.name, self.state))
 
     
 
