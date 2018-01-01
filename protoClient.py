@@ -1,6 +1,7 @@
 import speech_recognition
 from gtts import gTTS
 import os
+import queue
 
 import websocket
 # from threading import Thread
@@ -54,24 +55,19 @@ def on_close(ws):
     print("### closed ###")
 
 def on_message(ws, message):
-    queue = []
-    if speaking:
-        speak(message)
-    else:
-        queue.enque(message)
-        # when speaking set back to true, deque and speak the message
-        # when message is done speaking, set speaking back to false
+    while not globalQueue.empty():
+        speak(globalQueue.get())
 
 def on_open(ws):
-    while True:
-        if not speaking:
-            raw = listen()
-            # when listen is complete, set speaking back to true
-            if raw:
-                ws.send(raw)
-    #handle ping later 
+    clientState = clientState.Deciding
+    handleDecidingState()
+
+def handleDecidingState():
+
+
 
 if __name__ == "__main__":
+    global globalQueue = queue.Queue()
     host = "ws://voiceminder.localtunnel.me/websocket/"
     ws = websocket.WebSocketApp(host,
                                 on_message=on_message,
