@@ -58,13 +58,11 @@ def on_open(ws):
     def deliver(*args):
         global SPEAKING
         while True:
-            THREADLOCK.acquire()
             if not SPEAKING:
                 raw = listen()
                 print("listen(): " + raw)
                 if raw:
                     ws.send(raw)
-            THREADLOCK.release()
     runThread = Thread(target=deliver)
     runThread.daemon = False
     runThread.start()
