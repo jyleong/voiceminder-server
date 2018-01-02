@@ -14,6 +14,15 @@ import websocket
 
 speaking = False
 
+from enum import Enum
+class ClientState(Enum):
+    Deciding = 0
+    Speaking = 1
+    Listening = 2
+    Invalid = 99
+
+
+
 def speak(incomingtext):
     speaking = True
     print(incomingtext)
@@ -55,19 +64,49 @@ def on_close(ws):
     print("### closed ###")
 
 def on_message(ws, message):
-    while not globalQueue.empty():
-        speak(globalQueue.get())
+    print('client on_message: enqueuing message')
+    globalQueue.put(message)
+
 
 def on_open(ws):
-    clientState = clientState.Deciding
-    handleDecidingState()
+    print("client is opening")
+    # TODO Refactor
+    clientState = ClientState.Deciding
+    handleDecidingState(ws)
 
-def handleDecidingState():
+def handleDecidingState(ws):
+    if not globalQueue.empty():
+        print("handleDecidingState: setting state to speaking")
+        # TODO Refactor
+        clientState = ClientState.Speaking
+        handleSpeakingState()
+    else:
+        print("handleDecidingState: setting state to Listening")
+        # TODO Refactor
+        clientState = ClientState.Listening
+        handleListeningState(ws)
+
+def handleListeningState(ws):
+    print("handleListeningState: setting state to Listening")
+    raw = listen()
+    if raw:
+        ws.send(raw)
+        completeListeningState()
+
+def completeListeningState():
+    clientState = ClientState.Speaking
+    handleSpeakingState()
 
 
+def handleSpeakingState():
+    print("handleSpeakingState: dequeueing messages")
+    print(globalQueue.get())
+    speak(globalQueue.get())
 
 if __name__ == "__main__":
-    global globalQueue = queue.Queue()
+    global globalQueue 
+    globalQueue = queue.Queue()
+
     host = "ws://voiceminder.localtunnel.me/websocket/"
     ws = websocket.WebSocketApp(host,
                                 on_message=on_message,
