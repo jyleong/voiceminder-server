@@ -66,7 +66,27 @@ def on_close(ws):
 def on_message(ws, message):
     print('client on_message: enqueuing message')
     globalQueue.put(message)
+    print('globalQueue size: ', globalQueue.qsize())
 
+    handleDecidingState(ws)
+
+def hasIncomingMessage():
+    if globalQueue.empty():
+        return False
+    else:
+        return True
+
+def handleSpeakingState(ws):
+    print("handleSpeakingState: dequeueing messages")
+
+    while not globalQueue.empty():
+        print('message in globalQueue: ',globalQueue.get())
+        speak(globalQueue.get())
+
+    if globalQueue.empty():
+        print('handleSpeakingState: queue is empty globalQueue is empty')
+        # Speaking state complete, go back to deciding state
+        handleDecidingState(ws)
 
 def on_open(ws):
     print("client is opening")
@@ -75,14 +95,16 @@ def on_open(ws):
     handleDecidingState(ws)
 
 def handleDecidingState(ws):
-    if not globalQueue.empty():
-        print("handleDecidingState: setting state to speaking")
-        # TODO Refactor
+    if hasIncomingMessage():
+        print("handleDecidingState: decided to speak")
+
+        # TODO Going into speaking state Refactor Later
         clientState = ClientState.Speaking
-        handleSpeakingState()
+        handleSpeakingState(ws)
     else:
-        print("handleDecidingState: setting state to Listening")
-        # TODO Refactor
+        print("handleDecidingState: decided to listen")
+
+        # TODO Going into listening state Refactor later
         clientState = ClientState.Listening
         handleListeningState(ws)
 
@@ -90,18 +112,10 @@ def handleListeningState(ws):
     print("handleListeningState: setting state to Listening")
     raw = listen()
     if raw:
+        print('raw is not null, sending message to socket server')
         ws.send(raw)
-        completeListeningState()
-
-def completeListeningState():
-    clientState = ClientState.Speaking
-    handleSpeakingState()
-
-
-def handleSpeakingState():
-    print("handleSpeakingState: dequeueing messages")
-    print(globalQueue.get())
-    speak(globalQueue.get())
+    # else raw is null, but we should still decide what to do 
+    handleDecidingState(ws)
 
 if __name__ == "__main__":
     global globalQueue 
