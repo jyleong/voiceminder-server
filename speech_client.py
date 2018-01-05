@@ -78,7 +78,7 @@ def on_open(ws):
 if __name__ == "__main__":
     # websocket.enableTrace(True)
     parser = argparse.ArgumentParser(description='Arguments to start speech client')
-    parser.add_argument('--host', type=str, default="ws://voiceminder.localtunnel.me/websocket/",
+    parser.add_argument('--host', type=str, default="ws://localhost:5000/websocket/",
                     help='an integer for the accumulator')
     args = parser.parse_args()
     host = args.host

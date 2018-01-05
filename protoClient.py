@@ -4,8 +4,9 @@ import os
 import queue
 
 import websocket
-# from threading import Thread
-# import time
+from threading import Thread
+import threading
+import time
 # import sys
 # import argparse
 
@@ -33,6 +34,7 @@ def speak(incomingtext):
 
 recognizer = speech_recognition.Recognizer()
 def listen():
+    print("listen")
     with speech_recognition.Microphone() as source:
         # recognizer.energy_threshold = 150
         # recognizer.adjust_for_ambient_noise(source, duration= 0.5)
@@ -44,7 +46,6 @@ def listen():
     try:
         # print(recognizer.recognize_sphinx(audio))
         # return recognizer.recognize_sphinx(audio)
-        print(recognizer.recognize_google(audio))
         return recognizer.recognize_google(audio)
         # for testing purposes, we're just using the default API key
         # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
@@ -64,55 +65,67 @@ def on_close(ws):
     print("### closed ###")
 
 def on_message(ws, message):
-    print('client on_message: enqueuing message')
+    print('on_message')
     globalQueue.put(message)
     print('globalQueue size: ', globalQueue.qsize())
 
-    handleDecidingState(ws)
-
 def hasIncomingMessage():
-    if globalQueue.empty():
-        return False
-    else:
-        return True
+    return not globalQueue.empty()
 
 def handleSpeakingState(ws):
-    print("handleSpeakingState: dequeueing messages")
+    print("handleSpeakingState")
 
     while not globalQueue.empty():
         print('message in globalQueue: ',globalQueue.get())
+        #TODO: speak on main thread
         speak(globalQueue.get())
-
+        
     if globalQueue.empty():
         print('handleSpeakingState: queue is empty globalQueue is empty')
         # Speaking state complete, go back to deciding state
         handleDecidingState(ws)
 
 def on_open(ws):
-    print("client is opening")
+    print("on_open")
     # TODO Refactor
     clientState = ClientState.Deciding
-    handleDecidingState(ws)
+    
+    # def deliver(*args):
+    #     while True:
+    #         raw = listen()
+    #         if raw:
+    #             ws.send(raw)
+    runThread = Thread(target=handleDecidingState, args=[ws])
+    runThread.daemon = False
+    runThread.start()
+
+    # handleDecidingState(ws)
+
+    def ping(*args):
+        while True:
+            time.sleep(1)
+            ws.send("ping")
+    Thread(target=ping).start()
 
 def handleDecidingState(ws):
+    assert threading.current_thread() == threading.main_thread()
+    print("handleDecidingState")
+    time.sleep(2)
+    print("waited for a second before deciding")
     if hasIncomingMessage():
-        print("handleDecidingState: decided to speak")
-
         # TODO Going into speaking state Refactor Later
         clientState = ClientState.Speaking
         handleSpeakingState(ws)
     else:
-        print("handleDecidingState: decided to listen")
-
         # TODO Going into listening state Refactor later
         clientState = ClientState.Listening
         handleListeningState(ws)
 
 def handleListeningState(ws):
-    print("handleListeningState: setting state to Listening")
+    print("handleListeningState")
     raw = listen()
     if raw:
-        print('raw is not null, sending message to socket server')
+        print('raw: ', raw)
         ws.send(raw)
     # else raw is null, but we should still decide what to do 
     handleDecidingState(ws)
@@ -121,7 +134,7 @@ if __name__ == "__main__":
     global globalQueue 
     globalQueue = queue.Queue()
 
-    host = "ws://voiceminder.localtunnel.me/websocket/"
+    host = "ws://localhost:5000/websocket/"
     ws = websocket.WebSocketApp(host,
                                 on_message=on_message,
                                 on_error=on_error,

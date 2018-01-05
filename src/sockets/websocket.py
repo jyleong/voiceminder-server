@@ -71,6 +71,7 @@ class WebSocket(WebSocketHandler):
         return UserList.userFromSocket(self)
 
     def askForName(self):
+        print("askForName")
         self.write_message("State your name")
 
     def handleNamelessState(self, user, str):
