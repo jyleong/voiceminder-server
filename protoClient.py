@@ -106,7 +106,7 @@ def ping(*args):
 
 def handleDecidingState(ws):
     print("handleDecidingState")
-    time.sleep(0.1)
+    time.sleep(0.05)
     print("waited for 0.1 second before deciding")
     if hasIncomingMessage():
         # TODO Going into speaking state Refactor Later
@@ -130,7 +130,8 @@ if __name__ == "__main__":
     global globalQueue 
     globalQueue = queue.Queue()
 
-    host = "ws://localhost:5000/websocket/"
+    host = "ws://voiceminder.localtunnel.me/websocket/"
+    # host = "ws://localhost:5000/websocket/"
     ws = websocket.WebSocketApp(host,
                                 on_message=on_message,
                                 on_error=on_error,
