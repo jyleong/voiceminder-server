@@ -65,7 +65,7 @@ def on_close(ws):
     print("### closed ###")
 
 def on_message(ws, message):
-    print('on_message')
+    print('on_message: ', message)
     globalQueue.put(message)
     print('globalQueue size: ', globalQueue.qsize())
 
@@ -75,10 +75,12 @@ def hasIncomingMessage():
 def handleSpeakingState(ws):
     print("handleSpeakingState")
 
-    while not globalQueue.empty():
-        print('message in globalQueue: ',globalQueue.get())
-        #TODO: speak on main thread
-        speak(globalQueue.get())
+    while hasIncomingMessage():
+    # while not globalQueue.empty():
+        storedMessage = globalQueue.get()
+        print('storedMessage from globalQueue: ',storedMessage)
+        #TODO: investigate storing message in var, why does it work but direct call doesnt?
+        speak(storedMessage)
         
     if globalQueue.empty():
         print('handleSpeakingState: queue is empty globalQueue is empty')
@@ -89,29 +91,23 @@ def on_open(ws):
     print("on_open")
     # TODO Refactor
     clientState = ClientState.Deciding
-    
-    # def deliver(*args):
-    #     while True:
-    #         raw = listen()
-    #         if raw:
-    #             ws.send(raw)
+
     runThread = Thread(target=handleDecidingState, args=[ws])
     runThread.daemon = False
     runThread.start()
 
-    # handleDecidingState(ws)
-
-    def ping(*args):
-        while True:
-            time.sleep(1)
-            ws.send("ping")
     Thread(target=ping).start()
 
+def ping(*args):
+    while True:
+        time.sleep(1)
+        ws.send("ping")
+
+
 def handleDecidingState(ws):
-    assert threading.current_thread() == threading.main_thread()
     print("handleDecidingState")
-    time.sleep(2)
-    print("waited for a second before deciding")
+    time.sleep(0.1)
+    print("waited for 0.1 second before deciding")
     if hasIncomingMessage():
         # TODO Going into speaking state Refactor Later
         clientState = ClientState.Speaking
