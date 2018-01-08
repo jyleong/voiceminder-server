@@ -124,13 +124,13 @@ class WebSocket(WebSocketHandler):
             recipient.socket.countDown = Countdown(lambda: recipient.setState(UserState.Ready), duration=DURATION_CONST)
             self.countDown.start()
             recipient.socket.countDown.start()
-        
+
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
             self.write_message("could not recognize the recipient in your message")
             return
         recipient = UserList.userFromName(recipientName)
-        if not recipient:
+        if not recipient and not recipient.socket:
             self.write_message("could not find the recipient from your message")
             return
 
@@ -143,7 +143,8 @@ class WebSocket(WebSocketHandler):
         user.conversant = recipient
         recipient.conversant = user
         recipient.state = UserState.Conversing
-        recipient.socket.write_message(f"{user.name} says, {message}") 
+            
+        recipient.socket.write_message(f"{user.name} says, {message}")
         return recipient
 
     def handleConversingState(self, user, str):

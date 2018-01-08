@@ -13,7 +13,6 @@ import time
 # USER_NAME = ""
 # TEST_MODE = False
 
-speaking = False
 
 from enum import Enum
 class ClientState(Enum):
@@ -25,35 +24,34 @@ class ClientState(Enum):
 
 
 def speak(incomingtext):
-    speaking = True
     print(incomingtext)
     tts = gTTS(text=incomingtext, lang='en')
     tts.save("incomingtext.mp3")
     os.system("mpg321 incomingtext.mp3")
-    speaking = False
 
 recognizer = speech_recognition.Recognizer()
 def listen():
     print("listen")
     with speech_recognition.Microphone() as source:
-        # recognizer.energy_threshold = 150
+        recognizer.energy_threshold = 400
         # recognizer.adjust_for_ambient_noise(source, duration= 0.5)
-        
+
         recognizer.dynamic_energy_threshold = True
+        try:
+            audio = recognizer.listen(source, timeout=3, phrase_time_limit=10)
+            # print(recognizer.recognize_sphinx(audio))
+            # return recognizer.recognize_sphinx(audio)
 
-        audio = recognizer.listen(source, timeout=300, phrase_time_limit=1000)
-
-    try:
-        # print(recognizer.recognize_sphinx(audio))
-        # return recognizer.recognize_sphinx(audio)
-        return recognizer.recognize_google(audio)
-        # for testing purposes, we're just using the default API key
-        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-        # instead of `r.recognize_google(audio)`
-    except speech_recognition.UnknownValueError:
-        print("Could not understand audio, trying again")
-    except speech_recognition.RequestError as e:
-        print("Recog Error; {0}".format(e))
+            return recognizer.recognize_google(audio)
+            # for testing purposes, we're just using the default API key
+            # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+            # instead of `r.recognize_google(audio)`
+        except speech_recognition.UnknownValueError:
+            print("Could not understand audio, trying again")
+        except speech_recognition.RequestError as e:
+            print("Recog Error; {0}".format(e))
+        except speech_recognition.WaitTimeoutError:
+            print("Timeout: speech_recognition.WaitTimeoutError")
 
     return ""
 
@@ -81,7 +79,7 @@ def handleSpeakingState(ws):
         print('storedMessage from globalQueue: ',storedMessage)
         #TODO: investigate storing message in var, why does it work but direct call doesnt?
         speak(storedMessage)
-        
+
     if globalQueue.empty():
         print('handleSpeakingState: queue is empty globalQueue is empty')
         # Speaking state complete, go back to deciding state
@@ -93,7 +91,7 @@ def on_open(ws):
     clientState = ClientState.Deciding
 
     runThread = Thread(target=handleDecidingState, args=[ws])
-    runThread.daemon = False
+    runThread.daemon = True
     runThread.start()
 
     Thread(target=ping).start()
@@ -106,8 +104,8 @@ def ping(*args):
 
 def handleDecidingState(ws):
     print("handleDecidingState")
-    time.sleep(0.05)
-    print("waited for 0.1 second before deciding")
+    time.sleep(0.15)
+    print("waited for 0.15 second before deciding")
     if hasIncomingMessage():
         # TODO Going into speaking state Refactor Later
         clientState = ClientState.Speaking
@@ -123,11 +121,11 @@ def handleListeningState(ws):
     if raw:
         print('raw: ', raw)
         ws.send(raw)
-    # else raw is null, but we should still decide what to do 
+    # else raw is null, but we should still decide what to do
     handleDecidingState(ws)
 
 if __name__ == "__main__":
-    global globalQueue 
+    global globalQueue
     globalQueue = queue.Queue()
 
     host = "ws://voiceminder.localtunnel.me/websocket/"
