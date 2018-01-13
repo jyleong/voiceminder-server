@@ -132,7 +132,7 @@ class WebSocket(WebSocketHandler):
             self.write_message("could not recognize the recipient in your message")
             return
         recipient = UserList.userFromName(recipientName)
-        if not recipient and not recipient.socket:
+        if not recipient or not recipient.socket:
             self.write_message("could not find the recipient from your message")
             return
 

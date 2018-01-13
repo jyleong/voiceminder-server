@@ -1,46 +1,49 @@
 import speech_recognition
 from gtts import gTTS
 import os
+import queue
 
 import websocket
-from threading import Thread, Lock
+from threading import Thread
+import threading
 import time
-import argparse
 
-SPEAKING = False
-
-THREADLOCK = Lock()
+from enum import Enum
+class ClientState(Enum):
+    Deciding = 0
+    Speaking = 1
+    Listening = 2
+    Invalid = 99
 
 def speak(incomingtext):
-    global SPEAKING
-    THREADLOCK.acquire() # begin critical section
-    SPEAKING = True
     print(incomingtext)
     tts = gTTS(text=incomingtext, lang='en')
     tts.save("incomingtext.mp3")
     os.system("mpg321 incomingtext.mp3")
-    SPEAKING = False
-    THREADLOCK.release() # end critical section
 
 recognizer = speech_recognition.Recognizer()
 def listen():
+    print("listen")
     with speech_recognition.Microphone() as source:
-        # recognizer.energy_threshold = 150
+        recognizer.energy_threshold = 400
         # recognizer.adjust_for_ambient_noise(source, duration= 0.5)
-        
+
         recognizer.dynamic_energy_threshold = True
+        try:
+            audio = recognizer.listen(source, timeout=3, phrase_time_limit=10)
+            # print(recognizer.recognize_sphinx(audio))
+            # return recognizer.recognize_sphinx(audio)
 
-        audio = recognizer.listen(source, timeout=300, phrase_time_limit=1000)
-
-    try:
-        return recognizer.recognize_google(audio)
-        # for testing purposes, we're just using the default API key
-        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-        # instead of `r.recognize_google(audio)`
-    except speech_recognition.UnknownValueError:
-        print("Could not understand audio, trying again")
-    except speech_recognition.RequestError as e:
-        print("Recog Error; {0}".format(e))
+            return recognizer.recognize_google(audio)
+            # for testing purposes, we're just using the default API key
+            # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+            # instead of `r.recognize_google(audio)`
+        except speech_recognition.UnknownValueError:
+            print("Could not understand audio, trying again")
+        except speech_recognition.RequestError as e:
+            print("Recog Error; {0}".format(e))
+        except speech_recognition.WaitTimeoutError:
+            print("Timeout: speech_recognition.WaitTimeoutError")
 
     return ""
 
@@ -52,36 +55,71 @@ def on_close(ws):
     print("### closed ###")
 
 def on_message(ws, message):
-    speak(message)
+    print('on_message: ', message)
+    globalQueue.put(message)
+    print('globalQueue size: ', globalQueue.qsize())
+
+def hasIncomingMessage():
+    return not globalQueue.empty()
+
+def handleSpeakingState(ws):
+    print("handleSpeakingState")
+    while hasIncomingMessage():
+        storedMessage = globalQueue.get()
+        print('storedMessage from globalQueue: ',storedMessage)
+        #TODO: investigate storing message in var, why does it work but direct call doesnt?
+        speak(storedMessage)
+
+    if globalQueue.empty():
+        print('handleSpeakingState: queue is empty globalQueue is empty')
+        # Speaking state complete, go back to deciding state
+        handleDecidingState(ws)
 
 def on_open(ws):
-    def deliver(*args):
-        global SPEAKING
-        while True:
-            if not SPEAKING:
-                raw = listen()
-                print("listen(): " + raw)
-                if raw:
-                    ws.send(raw)
-    runThread = Thread(target=deliver)
-    runThread.daemon = False
-    runThread.start()
+    # TODO Refactor
+    clientState = ClientState.Deciding
 
-    def ping(*args):
-        while True:
-            time.sleep(1)
-            ws.send("ping")
+    runThread = Thread(target=handleDecidingState, args=[ws])
+    runThread.daemon = True
+    runThread.start()
 
     Thread(target=ping).start()
 
+def ping(*args):
+    while True:
+        time.sleep(1)
+        ws.send("ping")
+
+
+def handleDecidingState(ws):
+    print("handleDecidingState")
+    # TODO tune this time
+    time.sleep(0.15)
+    print("waited for 0.15 second before deciding")
+    if hasIncomingMessage():
+        # TODO Going into speaking state Refactor Later
+        clientState = ClientState.Speaking
+        handleSpeakingState(ws)
+    else:
+        # TODO Going into listening state Refactor later
+        clientState = ClientState.Listening
+        handleListeningState(ws)
+
+def handleListeningState(ws):
+    print("handleListeningState")
+    raw = listen()
+    if raw:
+        print('raw: ', raw)
+        ws.send(raw)
+    # else raw is null, but we should still decide what to do
+    handleDecidingState(ws)
 
 if __name__ == "__main__":
-    # websocket.enableTrace(True)
-    parser = argparse.ArgumentParser(description='Arguments to start speech client')
-    parser.add_argument('--host', type=str, default="ws://localhost:5000/websocket/",
-                    help='an integer for the accumulator')
-    args = parser.parse_args()
-    host = args.host
+    global globalQueue
+    globalQueue = queue.Queue()
+
+    host = "ws://voiceminder.localtunnel.me/websocket/"
+    # host = "ws://localhost:5000/websocket/"
     ws = websocket.WebSocketApp(host,
                                 on_message=on_message,
                                 on_error=on_error,

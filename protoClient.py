@@ -7,12 +7,6 @@ import websocket
 from threading import Thread
 import threading
 import time
-# import sys
-# import argparse
-
-# USER_NAME = ""
-# TEST_MODE = False
-
 
 from enum import Enum
 class ClientState(Enum):
@@ -20,8 +14,6 @@ class ClientState(Enum):
     Speaking = 1
     Listening = 2
     Invalid = 99
-
-
 
 def speak(incomingtext):
     print(incomingtext)
@@ -72,9 +64,7 @@ def hasIncomingMessage():
 
 def handleSpeakingState(ws):
     print("handleSpeakingState")
-
     while hasIncomingMessage():
-    # while not globalQueue.empty():
         storedMessage = globalQueue.get()
         print('storedMessage from globalQueue: ',storedMessage)
         #TODO: investigate storing message in var, why does it work but direct call doesnt?
@@ -86,7 +76,6 @@ def handleSpeakingState(ws):
         handleDecidingState(ws)
 
 def on_open(ws):
-    print("on_open")
     # TODO Refactor
     clientState = ClientState.Deciding
 
@@ -104,6 +93,7 @@ def ping(*args):
 
 def handleDecidingState(ws):
     print("handleDecidingState")
+    # TODO tune this time
     time.sleep(0.15)
     print("waited for 0.15 second before deciding")
     if hasIncomingMessage():
