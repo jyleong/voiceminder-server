@@ -25,12 +25,12 @@ recognizer = speech_recognition.Recognizer()
 def listen():
     print("listen")
     with speech_recognition.Microphone() as source:
-        recognizer.energy_threshold = 400
+        recognizer.energy_threshold = 1000
         # recognizer.adjust_for_ambient_noise(source, duration= 0.5)
 
-        recognizer.dynamic_energy_threshold = True
+        recognizer.dynamic_energy_threshold = False
         try:
-            audio = recognizer.listen(source, timeout=3, phrase_time_limit=10)
+            audio = recognizer.listen(source, timeout=3, phrase_time_limit=5)
             # print(recognizer.recognize_sphinx(audio))
             # return recognizer.recognize_sphinx(audio)
 
