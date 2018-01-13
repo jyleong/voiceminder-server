@@ -7,6 +7,9 @@ import websocket
 from threading import Thread
 import threading
 import time
+from tempfile import TemporaryFile
+import wave, sys, pyaudio
+import pygame
 
 from enum import Enum
 class ClientState(Enum):
@@ -18,23 +21,29 @@ class ClientState(Enum):
 def speak(incomingtext):
     print(incomingtext)
     tts = gTTS(text=incomingtext, lang='en')
+    tts = gTTS(text=incomingtext, lang='en')
     tts.save("incomingtext.mp3")
-    os.system("mpg321 incomingtext.mp3")
+
+    pygame.mixer.init()
+    pygame.mixer.music.load("incomingtext.mp3")
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy() == True:
+        continue
 
 recognizer = speech_recognition.Recognizer()
 def listen():
     print("listen")
     with speech_recognition.Microphone() as source:
-        recognizer.energy_threshold = 1000
+        recognizer.energy_threshold = 1700
         # recognizer.adjust_for_ambient_noise(source, duration= 0.5)
 
         recognizer.dynamic_energy_threshold = False
         try:
-            audio = recognizer.listen(source, timeout=3, phrase_time_limit=5)
+            audio = recognizer.listen(source, timeout=3, phrase_time_limit=3)
             # print(recognizer.recognize_sphinx(audio))
             # return recognizer.recognize_sphinx(audio)
-
-            return recognizer.recognize_google(audio)
+            recognized = recognizer.recognize_google(audio)
+            return recognized
             # for testing purposes, we're just using the default API key
             # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
             # instead of `r.recognize_google(audio)`
