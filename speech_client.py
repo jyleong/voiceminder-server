@@ -9,7 +9,7 @@ import threading
 import time
 from tempfile import TemporaryFile
 import wave, sys, pyaudio
-import pygame
+# import pygame
 
 from enum import Enum
 class ClientState(Enum):
@@ -22,12 +22,13 @@ def speak(incomingtext):
     print(incomingtext)
     tts = gTTS(text=incomingtext, lang='en')
     tts.save("incomingtext.mp3")
+    os.system("mplayer incomingtext.mp3")
 
-    pygame.mixer.init()
-    pygame.mixer.music.load("incomingtext.mp3")
-    pygame.mixer.music.play()
-    while pygame.mixer.music.get_busy() == True:
-        continue
+    # pygame.mixer.init()
+    # pygame.mixer.music.load("incomingtext.mp3")
+    # pygame.mixer.music.play()
+    # while pygame.mixer.music.get_busy() == True:
+    #     continue
 
 recognizer = speech_recognition.Recognizer()
 def listen():
