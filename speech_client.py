@@ -33,7 +33,7 @@ recognizer = speech_recognition.Recognizer()
 def listen():
     print("listen")
     with speech_recognition.Microphone() as source:
-        recognizer.energy_threshold = 1600
+        recognizer.energy_threshold = 1200
         # recognizer.adjust_for_ambient_noise(source, duration= 0.5)
 
         recognizer.dynamic_energy_threshold = False
