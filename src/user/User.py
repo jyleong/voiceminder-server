@@ -8,6 +8,7 @@ class UserState(Enum):
     Invalid = 99
 
 class User(object):
+
     socket = None
     name = None
     state = UserState.Nameless
@@ -20,6 +21,5 @@ class User(object):
     def setState(self, newState):
         self.state = newState
         print("User {} is now in state {}".format(self.name, self.state))
-
     
 

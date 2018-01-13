@@ -1,7 +1,9 @@
 import threading
 import time
 
+
 class EventLoop(threading.Thread):
+
 
     def __init__(self, method, duration=5):
         threading.Thread.__init__(self)
