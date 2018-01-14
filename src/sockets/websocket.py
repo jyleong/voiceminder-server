@@ -14,6 +14,8 @@ class WebSocket(WebSocketHandler):
     '''
     Crucial methods to WebSocket class
     '''
+    def check_origin(self, origin):
+        return True
 
     def open(self):
         print("SERVER: On new connection!")
