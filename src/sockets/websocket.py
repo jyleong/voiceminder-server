@@ -14,6 +14,8 @@ class WebSocket(WebSocketHandler):
     '''
     Crucial methods to WebSocket class
     '''
+    def check_origin(self, origin):
+        return True
 
     def open(self):
         print("SERVER: On new connection!")
@@ -77,9 +79,8 @@ class WebSocket(WebSocketHandler):
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
-            # self.eventLoop = EventLoop(lambda: self.confirmName(name))
-            # self.eventLoop.start()
-            self.confirmName(name)
+            self.eventLoop = EventLoop(lambda: self.confirmName(name))
+            self.eventLoop.start()
             user.setState(UserState.NameStaging)
         else:
             self.askForName()
@@ -93,12 +94,11 @@ class WebSocket(WebSocketHandler):
     def handleNameStagingState(self, user, str):
         # empty string case also handled by client
         if not str:
-            # self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
-            # self.eventLoop.start()
-            self.confirmName(user.name)
+            self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
+            self.eventLoop.start()
             return
-        #
-        # self.clearEventLoop()
+
+        self.clearEventLoop()
         if ProcessText.isAffirmative(str):
             user.setState(UserState.Ready)
             self.write_message(f"Hello {user.name}, now ready to send messages")
@@ -145,7 +145,7 @@ class WebSocket(WebSocketHandler):
         user.conversant = recipient
         recipient.conversant = user
         recipient.state = UserState.Conversing
-            
+
         recipient.socket.write_message(f"{user.name} says, {message}")
         return recipient
 
