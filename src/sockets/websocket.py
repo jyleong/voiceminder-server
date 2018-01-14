@@ -79,8 +79,9 @@ class WebSocket(WebSocketHandler):
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
-            self.eventLoop = EventLoop(lambda: self.confirmName(name))
-            self.eventLoop.start()
+            # self.eventLoop = EventLoop(lambda: self.confirmName(name))
+            # self.eventLoop.start()
+            self.confirmName(name)
             user.setState(UserState.NameStaging)
         else:
             self.askForName()
@@ -94,11 +95,12 @@ class WebSocket(WebSocketHandler):
     def handleNameStagingState(self, user, str):
         # empty string case also handled by client
         if not str:
-            self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
-            self.eventLoop.start()
+            # self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
+            # self.eventLoop.start()
+            self.confirmName(user.name)
             return
 
-        self.clearEventLoop()
+        # self.clearEventLoop()
         if ProcessText.isAffirmative(str):
             user.setState(UserState.Ready)
             self.write_message(f"Hello {user.name}, now ready to send messages")
