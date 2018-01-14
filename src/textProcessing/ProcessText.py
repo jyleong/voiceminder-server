@@ -4,7 +4,7 @@ class ProcessText(object):
     """
     @staticmethod
     def isSelfIdentification(userInput):
-        
+
         return True
 
     @staticmethod
@@ -17,12 +17,12 @@ class ProcessText(object):
         and extract the name
         will need NLP properly here
     """
-    
+
     @staticmethod
     def getUserName(userInput):
         if userInput is None or "": return None
         print("getUserName: ", userInput)
-        # assume that the last word of userInput 
+        # assume that the last word of userInput
         inputlist = userInput.split()
         recipientName = inputlist[-1].lower()
         return recipientName
@@ -44,7 +44,7 @@ class ProcessText(object):
             if word in affirmativeList:
                 return True
         return False
-            
+
     """
         take in a string: "hey june can you pick up some cheese"
         Understand the hey and name, extract name and message
@@ -54,7 +54,7 @@ class ProcessText(object):
     def getNameandMessage(userInput):
         # TODO More sophis later on
         inputList = userInput.split()
-        recipientName = inputList[1]
+        recipientName = inputList[1].lower()
         message = ' '.join(inputList[2:])
         return recipientName , message
 
@@ -71,4 +71,3 @@ class ProcessText(object):
     def hasRecipientName(userInput):
         targetPhrase = ['yo', 'yah', 'hey']
         return any (phrase in userInput.split() for phrase in targetPhrase)
-            
