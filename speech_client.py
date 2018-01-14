@@ -21,7 +21,6 @@ class ClientState(Enum):
 def speak(incomingtext):
     print(incomingtext)
     tts = gTTS(text=incomingtext, lang='en')
-    tts = gTTS(text=incomingtext, lang='en')
     tts.save("incomingtext.mp3")
 
     pygame.mixer.init()
@@ -34,10 +33,10 @@ recognizer = speech_recognition.Recognizer()
 def listen():
     print("listen")
     with speech_recognition.Microphone() as source:
-        recognizer.energy_threshold = 1700
-        # recognizer.adjust_for_ambient_noise(source, duration= 0.5)
+        # recognizer.energy_threshold = 700
+        recognizer.adjust_for_ambient_noise(source, duration= 0.2)
 
-        recognizer.dynamic_energy_threshold = False
+        recognizer.dynamic_energy_threshold = True
         try:
             audio = recognizer.listen(source, timeout=3, phrase_time_limit=3)
             # print(recognizer.recognize_sphinx(audio))
