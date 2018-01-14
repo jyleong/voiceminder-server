@@ -133,7 +133,7 @@ class WebSocket(WebSocketHandler):
             return
         recipient = UserList.userFromName(recipientName)
         if not recipient or not recipient.socket:
-            self.write_message("could not find the recipient from your message")
+            self.write_message("could not find {}".format(recipientName))
             return
 
         # terminate conversation on other end if switching to new recipient
