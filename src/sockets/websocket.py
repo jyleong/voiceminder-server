@@ -111,10 +111,18 @@ class WebSocket(WebSocketHandler):
     def handleReadyState(self, user, str):
         #check existence of name and message
         if not ProcessText.hasNameandMessage(str):
-            self.write_message("who is the recipient and what is the message")
+            if ProcessText.hasGreetings(str):
+                self.write_message("who is the recipient and what is the message")
             return
 
-        recipientName, message = ProcessText.getNameandMessage(str)
+        possibleRecipientName = ProcessText.getRecipientName(str)
+        if self.verifyRecipientName(user, possibleRecipientName):
+            recipientName, message = ProcessText.getNameandMessage(str)
+            self.sendingMessage(user, recipientName, message)
+        else:
+            self.write_message("come on, don't send messages to yourself")
+
+    def sendingMessage(self, user, recipientName, message):
         if not message:
             # message body is empty, just copy whole input to message
             message = str
@@ -128,6 +136,12 @@ class WebSocket(WebSocketHandler):
             recipient.socket.countDown = Countdown(lambda: recipient.setState(UserState.Ready), duration=DURATION_CONST)
             self.countDown.start()
             recipient.socket.countDown.start()
+
+    def verifyRecipientName(self, user, possibleRecipientName):
+        if user.name == possibleRecipientName:
+            return False
+        else:
+            return True
 
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
