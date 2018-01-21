@@ -59,6 +59,13 @@ class ProcessText(object):
         return recipientName , message
 
     @staticmethod
+    def getRecipientName(userInput):
+        # TODO More sophis later on
+        inputList = userInput.split()
+        recipientName = inputList[1].lower()
+        return recipientName
+
+    @staticmethod
     def hasNameandMessage(userInput):
         #TODO More sophis later on
         inputList = userInput.split()
@@ -69,5 +76,13 @@ class ProcessText(object):
 
     @staticmethod
     def hasRecipientName(userInput):
-        targetPhrase = ['yo', 'yah', 'hey']
+        targetPhrase = ['yo', 'yah', 'hey', 'hello', 'hi', 'howdy', 'greetings']
         return any (phrase in userInput.split() for phrase in targetPhrase)
+
+    @staticmethod
+    def hasGreetings(userInput):
+        targetPhrase = ['yo', 'yah', 'hey', 'hello', 'hi', 'howdy', 'greetings']
+        for phrase in targetPhrase:
+            if userInput.split()[0] == phrase:
+                return True
+        return False

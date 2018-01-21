@@ -12,6 +12,10 @@ import wave, sys, pyaudio
 # import pygame
 
 from enum import Enum
+
+recognizer = speech_recognition.Recognizer()
+
+
 class ClientState(Enum):
     Deciding = 0
     Speaking = 1
@@ -19,6 +23,7 @@ class ClientState(Enum):
     Invalid = 99
 
 def speak(incomingtext):
+    print("In speak, incomingtext:")
     print(incomingtext)
     tts = gTTS(text=incomingtext, lang='en')
     tts.save("incomingtext.mp3")
@@ -30,7 +35,6 @@ def speak(incomingtext):
     # while pygame.mixer.music.get_busy() == True:
     #     continue
 
-recognizer = speech_recognition.Recognizer()
 def listen():
     print("listen")
     with speech_recognition.Microphone() as source:

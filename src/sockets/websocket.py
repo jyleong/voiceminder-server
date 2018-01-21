@@ -79,8 +79,9 @@ class WebSocket(WebSocketHandler):
     def handleNamelessState(self, user, str):
         name = ProcessText.getUserName(str)
         if name is not None:
-            self.eventLoop = EventLoop(lambda: self.confirmName(name))
-            self.eventLoop.start()
+            # self.eventLoop = EventLoop(lambda: self.confirmName(name))
+            # self.eventLoop.start()
+            self.confirmName(name)
             user.setState(UserState.NameStaging)
         else:
             self.askForName()
@@ -94,11 +95,12 @@ class WebSocket(WebSocketHandler):
     def handleNameStagingState(self, user, str):
         # empty string case also handled by client
         if not str:
-            self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
-            self.eventLoop.start()
+            # self.eventLoop = EventLoop(lambda: self.confirmName(user.name))
+            # self.eventLoop.start()
+            self.confirmName(user.name)
             return
 
-        self.clearEventLoop()
+        # self.clearEventLoop()
         if ProcessText.isAffirmative(str):
             user.setState(UserState.Ready)
             self.write_message(f"Hello {user.name}, now ready to send messages")
@@ -108,11 +110,21 @@ class WebSocket(WebSocketHandler):
 
     def handleReadyState(self, user, str):
         #check existence of name and message
-        if not ProcessText.hasNameandMessage(str):
+        if self.checkNoNameandGreetings(str):
             self.write_message("who is the recipient and what is the message")
             return
 
-        recipientName, message = ProcessText.getNameandMessage(str)
+        possibleRecipientName = ProcessText.getRecipientName(str)
+        if self.verifyRecipientName(user, possibleRecipientName):
+            recipientName, message = ProcessText.getNameandMessage(str)
+            self.sendingMessage(user, recipientName, message)
+        else:
+            self.write_message("come on, don't send messages to yourself")
+
+    def checkNoNameandGreetings(self, str):
+        return not ProcessText.hasNameandMessage(str) and ProcessText.hasGreetings(str)
+
+    def sendingMessage(self, user, recipientName, message):
         if not message:
             # message body is empty, just copy whole input to message
             message = str
@@ -127,13 +139,17 @@ class WebSocket(WebSocketHandler):
             self.countDown.start()
             recipient.socket.countDown.start()
 
+    def verifyRecipientName(self, user, possibleRecipientName):
+        return not (user.name == possibleRecipientName)
+
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
             self.write_message("could not recognize the recipient in your message")
             return
         recipient = UserList.userFromName(recipientName)
         if not recipient or not recipient.socket:
-            self.write_message("could not find the recipient from your message")
+            
+            self.write_message("could not find {}".format(recipientName))
             return
 
         # terminate conversation on other end if switching to new recipient
