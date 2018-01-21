@@ -24,7 +24,7 @@ class TestUserListMethods(unittest.TestCase):
         assert(cls.userList.getSize() == 2)
 
         # test delete user
-        cls.userList.deleteUserBySocket(testUser.socket)
+        cls.userList.deleteUserByUUID(testUser.uuid)
 
         assert (cls.userList.getSize() == 1)
 
