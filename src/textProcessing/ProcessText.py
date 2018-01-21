@@ -76,7 +76,7 @@ class ProcessText(object):
 
     @staticmethod
     def hasRecipientName(userInput):
-        targetPhrase = ['yo', 'yah', 'hey', 'hello']
+        targetPhrase = ['yo', 'yah', 'hey', 'hello', 'hi', 'howdy', 'greetings']
         return any (phrase in userInput.split() for phrase in targetPhrase)
 
     @staticmethod
