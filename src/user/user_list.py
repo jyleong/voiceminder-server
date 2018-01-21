@@ -32,9 +32,9 @@ class UserList(object):
     return users[0] if users else None
 
   @classmethod
-  def userFromSocket(cls, socket):
+  def userByUUID(cls, uuid):
     for u in cls.users:
-      if u.socket == socket:
+      if u.uuid == uuid:
         return u
     return None
 

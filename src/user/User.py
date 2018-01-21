@@ -19,10 +19,13 @@ class User(object):
     """docstring for User"""
     def __init__(self):
         super(User, self).__init__()
-        self.uuid = str(uuid.uuid4())
 
     def setState(self, newState):
         self.state = newState
         print("User {} is now in state {}".format(self.name, self.state))
+
+    def setUUID(self, uuid):
+        self.uuid = uuid
+        print("User's uuid is set!")
     
 

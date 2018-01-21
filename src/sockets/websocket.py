@@ -3,6 +3,7 @@ from textProcessing.ProcessText import ProcessText
 from asynchronous.countdown import EventLoop, Countdown
 from user.User import User, UserState
 from user.user_list import UserList
+import uuid
 
 DURATION_CONST = 20
 
@@ -10,6 +11,7 @@ class WebSocket(WebSocketHandler):
 
     eventLoop = None
     countDown = None
+    uuid = None
 
     '''
     Crucial methods to WebSocket class
@@ -21,6 +23,8 @@ class WebSocket(WebSocketHandler):
         print("SERVER: On new connection!")
         newUser = User()
         newUser.socket = self
+        self.uuid = str(uuid.uuid4())
+        newUser.uuid = self.uuid
         UserList.append(newUser)
 
         self.askForName()
@@ -70,7 +74,7 @@ class WebSocket(WebSocketHandler):
     '''
 
     def currentUser(self):
-        return UserList.userFromSocket(self)
+        return UserList.userByUUID(self.uuid)
 
     def askForName(self):
         print("askForName")
