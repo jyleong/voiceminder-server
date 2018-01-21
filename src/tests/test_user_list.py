@@ -2,6 +2,7 @@ import unittest
 
 from user.user_list import UserList
 from user.User import User
+import uuid
 
 class TestUserListMethods(unittest.TestCase):
     @classmethod
@@ -10,6 +11,7 @@ class TestUserListMethods(unittest.TestCase):
         cls.setUpUser = User()
         cls.setUpUser.name = "June"
         cls.setUpUser.socket = "fake websocket"
+        cls.setUpUser.setUUID(str(uuid.uuid4()))
         cls.userList.append(cls.setUpUser)
 
     @classmethod
@@ -20,6 +22,7 @@ class TestUserListMethods(unittest.TestCase):
         testUser = User()
         testUser.name = "tester1"
         testUser.socket = "fake websocket 1"
+        testUser.setUUID(str(uuid.uuid4()))
         cls.userList.append(testUser)
         assert(cls.userList.getSize() == 2)
 
@@ -32,10 +35,10 @@ class TestUserListMethods(unittest.TestCase):
         testName = "Kevin"
         cls.userList.setNameforSocket(testName, "fake websocket")
         testUser = cls.userList.userFromName(testName)
-        testUserSocket = cls.userList.userFromSocket("fake websocket")
+        testUserByUUID = cls.userList.userByUUID(testUser.uuid)
 
         assert(testUser is not None)
-        assert(testUserSocket is not None)
+        assert(testUserByUUID is not None)
 
     def testContainsUser(cls):
 
