@@ -12,6 +12,10 @@ class UserList(object):
     cls.users.append(user)
 
   @classmethod
+  def getSize(cls):
+    return len(cls.users)
+
+  @classmethod
   def setNameforSocket(cls, name, socket):
     # TODO: make this search faster somehow???
     for u in cls.users:
@@ -36,7 +40,7 @@ class UserList(object):
 
   @classmethod
   def deleteUserBySocket(cls, socket):
-    for i in range(len(cls.users) - 1):
+    for i in range(len(cls.users)):
       if cls.users[i].socket == socket:
         del cls.users[i]
 
