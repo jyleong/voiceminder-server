@@ -61,7 +61,7 @@ class WebSocket(WebSocketHandler):
 
     def on_close(self):
         user = self.currentUser()
-        UserList.deleteUserBySocket(user.socket)
+        UserList.deleteUserByUUID(user.uuid)
         print("Socket closed.")
 
     '''

@@ -39,10 +39,11 @@ class UserList(object):
     return None
 
   @classmethod
-  def deleteUserBySocket(cls, socket):
+  def deleteUserByUUID(cls, uuid):
     for i in range(len(cls.users)):
-      if cls.users[i].socket == socket:
+      if cls.users[i].uuid == uuid:
         del cls.users[i]
+        return
 
   @classmethod
   def containsUser(cls, user):
