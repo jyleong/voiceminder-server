@@ -81,9 +81,8 @@ class ProcessText(object):
 
     @staticmethod
     def hasGreetings(userInput):
-        targetPhrase = ['yo', 'yah', 'hey', 'hello']
+        targetPhrase = ['yo', 'yah', 'hey', 'hello', 'hi', 'howdy', 'greetings']
         for phrase in targetPhrase:
             if userInput.split()[0] == phrase:
                 return True
-            else:
-                return False
+        return False

@@ -110,9 +110,8 @@ class WebSocket(WebSocketHandler):
 
     def handleReadyState(self, user, str):
         #check existence of name and message
-        if not ProcessText.hasNameandMessage(str):
-            if ProcessText.hasGreetings(str):
-                self.write_message("who is the recipient and what is the message")
+        if self.checkNoNameandGreetings(str):
+            self.write_message("who is the recipient and what is the message")
             return
 
         possibleRecipientName = ProcessText.getRecipientName(str)
@@ -121,6 +120,9 @@ class WebSocket(WebSocketHandler):
             self.sendingMessage(user, recipientName, message)
         else:
             self.write_message("come on, don't send messages to yourself")
+
+    def checkNoNameandGreetings(self, str):
+        return not ProcessText.hasNameandMessage(str) and ProcessText.hasGreetings(str)
 
     def sendingMessage(self, user, recipientName, message):
         if not message:
@@ -138,10 +140,7 @@ class WebSocket(WebSocketHandler):
             recipient.socket.countDown.start()
 
     def verifyRecipientName(self, user, possibleRecipientName):
-        if user.name == possibleRecipientName:
-            return False
-        else:
-            return True
+        return not (user.name == possibleRecipientName)
 
     def messageNamedUser(self, user, recipientName, message):
         if not recipientName:
