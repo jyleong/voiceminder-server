@@ -54,15 +54,15 @@ class ProcessText(object):
     def getNameandMessage(userInput):
         # TODO More sophis later on
         inputList = userInput.split()
-        recipientName = inputList[1].lower()
-        message = ' '.join(inputList[2:])
+        recipientName = inputList[1].lower() if len(inputList) >= 2 else None
+        message = ' '.join(inputList[2:]) if len(inputList) >= 2 else None
         return recipientName , message
 
     @staticmethod
     def getRecipientName(userInput):
         # TODO More sophis later on
         inputList = userInput.split()
-        recipientName = inputList[1].lower()
+        recipientName = inputList[1].lower() if len(inputList) >= 2 else None
         return recipientName
 
     @staticmethod
@@ -77,7 +77,8 @@ class ProcessText(object):
     @staticmethod
     def hasRecipientName(userInput):
         targetPhrase = ['yo', 'yah', 'hey', 'hello', 'hi', 'howdy', 'greetings']
-        return any (phrase in userInput.split() for phrase in targetPhrase)
+        inputLength = len(userInput.split())
+        return (inputLength>=2) and any (phrase in userInput.split() for phrase in targetPhrase)
 
     @staticmethod
     def hasGreetings(userInput):
