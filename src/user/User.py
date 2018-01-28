@@ -1,4 +1,5 @@
 from enum import Enum
+import uuid
 
 class UserState(Enum):
     Nameless = 0
@@ -11,6 +12,7 @@ class User(object):
 
     socket = None
     name = None
+    uuid = None
     state = UserState.Nameless
     conversant = None
 
@@ -21,5 +23,9 @@ class User(object):
     def setState(self, newState):
         self.state = newState
         print("User {} is now in state {}".format(self.name, self.state))
+
+    def setUUID(self, uuid):
+        self.uuid = uuid
+        print("User's uuid is set!")
     
 

@@ -12,6 +12,10 @@ class UserList(object):
     cls.users.append(user)
 
   @classmethod
+  def getSize(cls):
+    return len(cls.users)
+
+  @classmethod
   def setNameforSocket(cls, name, socket):
     # TODO: make this search faster somehow???
     for u in cls.users:
@@ -28,17 +32,18 @@ class UserList(object):
     return users[0] if users else None
 
   @classmethod
-  def userFromSocket(cls, socket):
+  def userByUUID(cls, uuid):
     for u in cls.users:
-      if u.socket == socket:
+      if u.uuid == uuid:
         return u
     return None
 
   @classmethod
-  def deleteUserBySocket(cls, socket):
-    for i in range(len(cls.users) - 1):
-      if cls.users[i].socket == socket:
+  def deleteUserByUUID(cls, uuid):
+    for i in range(len(cls.users)):
+      if cls.users[i].uuid == uuid:
         del cls.users[i]
+        return
 
   @classmethod
   def containsUser(cls, user):
