@@ -1,5 +1,4 @@
 from enum import Enum
-import uuid
 
 class UserState(Enum):
     Nameless = 0
