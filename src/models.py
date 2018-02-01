@@ -21,8 +21,6 @@ class User(db.Model):
     id = db.Column(db.String(60), unique=True, primary_key=True)
     name = db.Column(db.String(60))
     userState = db.Column(db.Enum(UserState))
-    # conversation = db.relationship("Conversation", backref='user',
-    #                lazy='dynamic')
 
     def __init__(self, name, userState):
         self.id = str(uuid_url64())
@@ -34,8 +32,8 @@ class Conversation(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    userFirstId = db.Column(db.String(60), db.ForeignKey('users.id'), primary_key=True)
-    userSecondId = db.Column(db.String(60), db.ForeignKey('users.id'), primary_key=True)
+    userFirstId = db.Column(db.String(60), db.ForeignKey('users.id'), nullable=False)
+    userSecondId = db.Column(db.String(60), db.ForeignKey('users.id'), nullable=False)
     userFirst = db.relationship('User', foreign_keys=[userFirstId])
     userSecond = db.relationship('User', foreign_keys=[userSecondId])
 
