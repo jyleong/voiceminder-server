@@ -27,6 +27,14 @@ class User(db.Model):
         self.name = name
         self.userState = userState
 
+    def setName(self, name):
+        self.name = name
+        print("UserId {} name is set to {}!".format(self.id, self.name))
+
+    def setState(self, newState):
+        self.userState = newState
+        print("UserId {} is now in state {}".format(self.id, self.state))
+
 class Conversation(db.Model):
     __tablename__ = "conversations"
 
