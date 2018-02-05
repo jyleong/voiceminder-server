@@ -1,8 +1,6 @@
 # manage.py
 
-import datetime
-import time
-from random import randint
+from user.User import UserState
 from flask_script import Manager # class for handling a set of commands
 from flask_migrate import Migrate, MigrateCommand
 from src.app_file import db, create_app, config_name
@@ -25,17 +23,24 @@ def seed():
     :return:
     '''
     print("Seeding database with initial users")
-    user1 = models.User(name="Rick")
-    user2 = models.User(name="Talia")
-    user3 = models.User(name="Christina")
-    sleepStateList = ["GOOD", "OKAY", "BAD"]
+    user1 = models.User(userName="Rick", userState=UserState.Ready)
+    user2 = models.User(userName="Talia", userState=UserState.Nameless)
+    user3 = models.User(userName="Christina", userState=UserState.Conversing)
 
 
     db.session.add_all([user1, user2, user3])
     db.session.flush()
     db.session.commit()
     print("Users created!")
-    print("Seeding database for users sleep records")
+    print("Seeding database for their converstations")
+    convo1 = models.Conversation(user1.id, user2.id)
+    db.session.add(convo1)
+    db.session.commit()
+
+    print("Add conversation message")
+    msg1 = models.ConversationMessage(user1.id, convo1.id)
+    db.session.add(msg1)
+    db.session.commit()
     return
 
 if __name__ == '__main__':
