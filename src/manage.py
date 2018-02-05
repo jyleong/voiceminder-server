@@ -23,9 +23,9 @@ def seed():
     :return:
     '''
     print("Seeding database with initial users")
-    user1 = models.User(name="Rick", userState=UserState.Ready)
-    user2 = models.User(name="Talia", userState=UserState.Nameless)
-    user3 = models.User(name="Christina", userState=UserState.Conversing)
+    user1 = models.User(userName="Rick", userState=UserState.Ready)
+    user2 = models.User(userName="Talia", userState=UserState.Nameless)
+    user3 = models.User(userName="Christina", userState=UserState.Conversing)
 
 
     db.session.add_all([user1, user2, user3])
@@ -35,6 +35,11 @@ def seed():
     print("Seeding database for their converstations")
     convo1 = models.Conversation(user1.id, user2.id)
     db.session.add(convo1)
+    db.session.commit()
+
+    print("Add conversation message")
+    msg1 = models.ConversationMessage(user1.id, convo1.id)
+    db.session.add(msg1)
     db.session.commit()
     return
 
