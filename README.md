@@ -56,6 +56,12 @@ brew install mysql
 mysql -u root -p
 mysql -u username -p
 CREATE DATABASE voiceminder;
+
+```
+
+On first setup of database run this command:
+```
+(voiceminder) > python3 src/manage.py db migrate
 ```
 Once voiceminder database has been created, now you can go to the your virtual environment
 ```
