@@ -1,68 +1,79 @@
+from enum import Enum
+import urllib.request
+import json
+
+class CatState(Enum):
+    Active = 0
+    Banned = 1
+
 class CatApp:
-    #when we say cat, gives us a cat picture.
-        #dog, exits the app / bans the user.
-        #else, tells the user to say cat.
 
-    #Out: some action - if cat, json pointing to an image of a cat, if dog, pointing to some 'banned' dog picture.
+    def __init__(self):
+        self.userState = CatState.Active
+        self.catsdict = None
+        self.ctr = 0
 
 
-    #in terms of json, can just grab from /r/subreddit.json
-        #need the ability to parse json, this should be generic.
-    def handle(incomingtext):
-        someDict = dict()
-        lowerText = incomingtext.lower()
-        if lowerText == "cat":
-            showCat()
-        elif lowerText == "dog":
-            permaban()
-        elif lowerText == "i don't like cats":
-            leave()
+    def handle(self, incomingtext):
+        if self.userState == CatState.Active:
+            someDict = dict()
+            lowerText = incomingtext.lower()
+            if lowerText == "cat":
+                someDict = self.showCat()
+            elif lowerText == "dog":
+                someDict = self.permaban()
+            elif lowerText == "i don't like cats":
+                someDict = self.leave()
+            else:
+                someDict = {"actionType":"nothing"}
+            return someDict
         else:
-            #ask for clarification of some sort.  "say cat or dog."
-        #in: A string with what the user has said.
-        #did it say cat? dog? else?
-        #somedict key: the action type
-        #       value: diplay image OR ban user OR quit ("I dont like cats anymore", not "take me home")
+            return {"actionType":"nothing"}
 
-        {
-        actionType: "speak"
-        actionDetail: {
-        phrase: "say cat or dog"
-            }
-        }
-
-        {
-        actionType: "show_image"
-        actionDetail: {
-        url: "www.imgur.com/fjifaewjioaewjifajifeawji"
-            }
-        }
-
-        return someDict
-
-    def getCatPicture():
-        #json call
-        #pick a random picture
+    def getCatPicture(self):
         picUrl = ""
+
+        if self.catsdict is None:
+            urllib.request.urlopen("https://www.reddit.com/r/catsstandingup/.json")
+            catjson = urllib.request.urlopen("https://www.reddit.com/r/catsstandingup/.json").read()
+            self.catsdict = json.loads(catjson)
+            print("fetching cats")
+
+
+        i = self.ctr % len(self.catsdict['data']['children'])
+        picUrl = self.catsdict['data']['children'][i]['data']['url']
+        self.ctr += 1
+
+        #this is the first cat picture.
         return picUrl
+        #return catdict['data']['children'][0]['data']['url']
 
     #all three of these should return JSON themselves.
-    def showCat():
+    def showCat(self):
         catDict = dict()
         catDict["actionType"] = "show_image"
         actionDetail = dict()
-        actionDetail["url"] = "www.somecatpicture.com"
+        actionDetail["url"] = self.getCatPicture()
         #make a json call for a cat image.
         catDict["actionDetail"] = actionDetail
         #display a cat picture
-        getCatPicture()
-        #prepare for displaying more pictures
+        return catDict
 
-        return someDict
-
-    def permaban():
+    def permaban(self):
         #display a 'you are banned' sad cat picture
-        #it is up the user to say 'take me home' to exit.
+        #it is up the user to say 'take me home' to exit.banDict = dict()
+        banDict = dict()
+        banDict["actionType"] = "show_image"
+        actionDetail = dict()
+        actionDetail["url"] = "www.catbanpicture.com"
+        banDict["actionDetail"] = actionDetail
+        self.userState = CatState.Banned
+        return banDict
 
-    def leave():
+    def leave(self):
+        leaveDict = dict()
+        leaveDict["actionType"] = "leave"
+        actionDetail = dict()
+        actionDetail["actionDetail"] = actionDetail
+        return leaveDict
         #go up one level, not home.
