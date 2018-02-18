@@ -1,6 +1,7 @@
 from enum import Enum
 import urllib.request
 import json
+import requests
 
 class CatState(Enum):
     Active = 0
@@ -37,8 +38,10 @@ class CatApp:
 
         if self.catsdict is None:
             try:
-                catjson = urllib.request.urlopen("https://www.np.reddit.com/r/catsstandingup/.json").read()
-                self.catsdict = json.loads(catjson)
+                url = "https://www.reddit.com/r/catsstandingup/.json"
+                headers = {'user-agent': 'ChromeCats'}
+                r = requests.get(url, headers=headers)
+                self.catsdict = r.json()
                 print("fetching cats")
             except Exception as e:
                 print("Error fetching json: ", e)
