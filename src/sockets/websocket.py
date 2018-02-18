@@ -3,6 +3,7 @@ from textProcessing.ProcessText import ProcessText
 from asynchronous.countdown import EventLoop, Countdown
 from user.User import User, UserState
 from user.user_list import UserList
+import catapp
 import uuid
 
 DURATION_CONST = 20
@@ -21,6 +22,12 @@ class WebSocket(WebSocketHandler):
 
     def open(self):
         print("SERVER: On new connection!")
+        self.app = catapp.CatApp()
+
+        jsonText = '{"actionType":"speak","actionDetail":"say cat"}'
+        self.write_message(jsonText)
+        return
+
         newUser = User()
         newUser.socket = self
         self.uuid = str(uuid.uuid4())
@@ -34,8 +41,14 @@ class WebSocket(WebSocketHandler):
         #TODO: get user instance, given socket
         print("on_message: ", str)
         # guard
-        testing = ProcessText.checkTestingMode(str)
 
+
+        result = self.app.handle(str)
+        print(result)
+        self.write_message(result)
+
+        return
+        testing = ProcessText.checkTestingMode(str)
         user = self.currentUser()
         if testing:
             print("SERVER: In testing mode")
@@ -64,8 +77,8 @@ class WebSocket(WebSocketHandler):
         return
 
     def on_close(self):
-        user = self.currentUser()
-        UserList.deleteUserByUUID(user.uuid)
+        #user = self.currentUser()
+        #UserList.deleteUserByUUID(user.uuid)
         print("Socket closed.")
 
     '''
@@ -148,7 +161,7 @@ class WebSocket(WebSocketHandler):
             self.write_message("could not recognize the recipient in your message")
             return
         recipient = UserList.userFromName(recipientName)
-        if not recipient or not recipient.socket:           
+        if not recipient or not recipient.socket:
             self.write_message("could not find {}".format(recipientName))
             return
 

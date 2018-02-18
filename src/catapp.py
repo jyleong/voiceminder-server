@@ -18,7 +18,7 @@ class CatApp:
         if self.userState == CatState.Active:
             someDict = dict()
             lowerText = incomingtext.lower()
-            if lowerText == "cat":
+            if lowerText == "cat" or lowerText == "cats" or lowerText == "got" or lowerText == "chat":
                 someDict = self.showCat()
             elif lowerText == "dog":
                 someDict = self.permaban()
@@ -33,15 +33,22 @@ class CatApp:
     def getCatPicture(self):
         picUrl = ""
 
-        if self.catsdict is None:
-            urllib.request.urlopen("https://www.reddit.com/r/catsstandingup/.json")
-            catjson = urllib.request.urlopen("https://www.reddit.com/r/catsstandingup/.json").read()
-            self.catsdict = json.loads(catjson)
-            print("fetching cats")
 
+
+        if self.catsdict is None:
+            try:
+                urllib.request.urlopen("https://www.reddit.com/r/catsstandingup/.json")
+                catjson = urllib.request.urlopen("https://www.reddit.com/r/catsstandingup/.json").read()
+                self.catsdict = json.loads(catjson)
+                print("fetching cats")
+            except Exception as e:
+                print("Error fetching json: ", e)
+                return "https://http.cat/429.jpg"
 
         i = self.ctr % len(self.catsdict['data']['children'])
         picUrl = self.catsdict['data']['children'][i]['data']['url']
+        if picUrl[-1] == "v":
+            picUrl = picUrl[:len(picUrl) - 1]
         self.ctr += 1
 
         #this is the first cat picture.
@@ -65,7 +72,7 @@ class CatApp:
         banDict = dict()
         banDict["actionType"] = "show_image"
         actionDetail = dict()
-        actionDetail["url"] = "www.catbanpicture.com"
+        actionDetail["url"] = "https://i.imgflip.com/24rtuf.jpg"
         banDict["actionDetail"] = actionDetail
         self.userState = CatState.Banned
         return banDict
