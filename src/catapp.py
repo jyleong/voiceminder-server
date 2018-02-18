@@ -37,8 +37,7 @@ class CatApp:
 
         if self.catsdict is None:
             try:
-                urllib.request.urlopen("https://www.reddit.com/r/catsstandingup/.json")
-                catjson = urllib.request.urlopen("https://www.reddit.com/r/catsstandingup/.json").read()
+                catjson = urllib.request.urlopen("https://www.np.reddit.com/r/catsstandingup/.json").read()
                 self.catsdict = json.loads(catjson)
                 print("fetching cats")
             except Exception as e:
